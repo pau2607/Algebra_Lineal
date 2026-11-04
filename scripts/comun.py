@@ -1,5 +1,4 @@
-"""Configuración compartida por los scripts: parámetros del experimento, rutas y estilo de figuras."""
-
+import csv
 import json
 import platform
 import sys
@@ -15,32 +14,26 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import scipy  # noqa: E402
 
-# --------------------------------------------------------------------------
-# Parámetros del experimento obligatorio (sección 9 del artículo)
-# --------------------------------------------------------------------------
-N = 128                       # número de puntos
-S = 0.03                      # ancho del suavizado gaussiano
-ETAS = [1e-4, 1e-3, 1e-2]     # niveles de ruido relativo
-SEMILLA = 2026                # semilla del vector gaussiano z (la misma dirección para los tres eta)
-TAU = 1.1                     # factor de seguridad del principio de discrepancia
-LAMBDA_REL = np.logspace(-10, 0, 61)  # malla de lambda / sigma_1^2 (6 puntos por década)
-KS = np.arange(1, N + 1)      # valores de k para la SVD truncada
+N = 128
+S = 0.03
+ETAS = [1e-4, 1e-3, 1e-2]
+SEMILLA = 2026
+TAU = 1.1
+LAMBDA_REL = np.logspace(-10, 0, 61)  # 6 puntos por década
+KS = np.arange(1, N + 1)
 
 DIR_FIG = RAIZ / "resultados" / "figuras"
 DIR_TAB = RAIZ / "resultados" / "tablas"
 DIR_FIG.mkdir(parents=True, exist_ok=True)
 DIR_TAB.mkdir(parents=True, exist_ok=True)
 
-# --------------------------------------------------------------------------
-# Estilo de figuras: superficie clara, tinta neutra, colores categóricos en orden fijo
-# --------------------------------------------------------------------------
 TINTA = "#0b0b0b"
 TINTA_2 = "#52514e"
 TENUE = "#898781"
 REJILLA = "#e1e0d9"
 EJE = "#c3c2b7"
 SUPERFICIE = "#fcfcfb"
-C1, C2, C3, C4 = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"   # azul, naranja, aqua, amarillo
+C1, C2, C3, C4 = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
 COLOR_ETA = {1e-4: C1, 1e-3: C2, 1e-2: C3}
 
 plt.rcParams.update({
@@ -84,9 +77,6 @@ def guardar(fig, nombre: str):
 
 
 def guardar_tabla(filas, nombre: str, columnas=None):
-    """Guarda una lista de diccionarios como CSV y como tabla Markdown."""
-    import csv
-
     columnas = columnas or list(filas[0].keys())
     with open(DIR_TAB / f"{nombre}.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=columnas)
@@ -96,10 +86,11 @@ def guardar_tabla(filas, nombre: str, columnas=None):
     def fmt(v):
         if isinstance(v, float):
             return f"{v:.4g}"
-        return "—" if v is None else str(v)
+        return "-" if v is None else str(v)
 
     lineas = ["| " + " | ".join(columnas) + " |", "|" + "---|" * len(columnas)]
-    lineas += ["| " + " | ".join(fmt(fila[c]) for c in columnas) + " |" for fila in filas]
+    for fila in filas:
+        lineas.append("| " + " | ".join(fmt(fila[c]) for c in columnas) + " |")
     (DIR_TAB / f"{nombre}.md").write_text("\n".join(lineas) + "\n", encoding="utf-8")
     print(f"  tabla  -> resultados/tablas/{nombre}.csv / .md")
 
@@ -112,6 +103,11 @@ def entorno():
         "matplotlib": matplotlib.__version__,
     }
 
+
+def guardar_json(obj, nombre: str):
+    ruta = RAIZ / "resultados" / nombre
+    ruta.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"  json   -> {ruta.relative_to(RAIZ)}")
 
 def guardar_json(obj, nombre: str):
     ruta = RAIZ / "resultados" / nombre
