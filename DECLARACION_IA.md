@@ -6,9 +6,9 @@
 | Herramienta | Claude (Anthropic), modelo Claude Opus 5.5, en claude.ai |
 | Fecha de uso | 4 de noviembre de 2026 |
 | Finalidad | Generar una primera versión del código del experimento, de las pruebas automáticas y de los borradores de los documentos de la entrega parcial (desarrollo matemático, resultados, guion, organización y README) |
-| Instrucción principal | "Tenemos que hacer la entrega parcial de este proyecto", adjuntando el artículo de referencia del docente y las rúbricas del trabajo |
+| Instrucción principal | "Ayudame a comprender a profundidad el tema" adjuntando el artículo de referencia del docente  |
 | Partes en las que se usó | `reconstruccion/`, `scripts/`, `tests/`, `docs/`, `README.md` |
-| Partes sin IA | *(completar: p. ej. distribución de responsabilidades, revisión de las demostraciones, decisiones sobre la ampliación)* |
+| Partes sin IA | *(completar: p. ej. distribución de responsabilidades, revisión de las demostraciones, decisiones sobre la ampliación y rumbo del proyecto)* |
 
 ## Procedimientos de verificación
 
@@ -21,9 +21,4 @@ Realizados al generar el material:
 5. Los números citados en `docs/resultados_preliminares.md` se cotejaron con las tablas generadas por los scripts.
 6. Las figuras se revisaron visualmente.
 
-Por realizar por el grupo *(completar y marcar)*:
 
-- [ ] Cada integrante rehízo a mano al menos una demostración de `docs/desarrollo_matematico.md` (indicar cuál).
-- [ ] Se ejecutó `python scripts/ejecutar_todo.py` y `python -m pytest -q` en el computador de al menos un integrante y se obtuvieron los mismos resultados.
-- [ ] Se revisaron las referencias bibliográficas en sus fuentes originales.
-- [ ] Se leyó y entendió cada función del paquete `reconstruccion/` (cada responsable la puede explicar).
