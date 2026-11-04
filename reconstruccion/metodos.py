@@ -28,9 +28,8 @@ class SVD:
         return self.U.T @ b
 
 
-# --------------------------------------------------------------------------
 # Pseudoinversa
-# --------------------------------------------------------------------------
+
 
 def tolerancia_rango_scipy(A: np.ndarray, sigma1: float) -> float:
     """Umbral por defecto de scipy.linalg.pinv: rtol = max(m, n) * eps, aplicado como rtol * sigma_1."""
@@ -60,9 +59,8 @@ def pseudoinversa_completa(svd: SVD, b: np.ndarray) -> np.ndarray:
     return svd.V[:, positivos] @ (c[positivos] / svd.sigma[positivos])
 
 
-# --------------------------------------------------------------------------
 # SVD truncada
-# --------------------------------------------------------------------------
+
 
 def svd_truncada(svd: SVD, b: np.ndarray, k: int) -> np.ndarray:
     """x_k = sum_{i<=k} (u_i^T b / sigma_i) v_i."""
@@ -72,9 +70,9 @@ def svd_truncada(svd: SVD, b: np.ndarray, k: int) -> np.ndarray:
     return svd.V[:, :k] @ (c[:k] / svd.sigma[:k])
 
 
-# --------------------------------------------------------------------------
+
 # Tikhonov
-# --------------------------------------------------------------------------
+
 
 def factores_filtro(sigma: np.ndarray, lam: float) -> np.ndarray:
     """f_i(lambda) = sigma_i^2 / (sigma_i^2 + lambda)."""
