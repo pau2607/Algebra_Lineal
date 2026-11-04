@@ -82,33 +82,30 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 
 ## Cómo ejecutar
 
-Requisitos: Python ≥ 3.10.
+Requiere Python ≥ 3.10.
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-python scripts/ejecutar_todo.py  # regenera resultados/ (≈ 6 s)
-python -m pytest -q              # 23 pruebas
+python scripts/ejecutar_todo.py   # regenera resultados/ (≈ 6 s)
+python -m pytest -q               # 23 pruebas
 ```
 
-Cada script también se puede ejecutar por separado desde la raíz del repositorio, por ejemplo `python scripts/01_ejemplo_diagonal.py`.
-
-### Parámetros y tolerancias registrados
+### Parámetros registrados
 
 | Parámetro | Valor |
 |---|---|
 | $n$, $s$ | 128, 0.03 |
-| Semilla del vector $z$ | 2026 (la misma dirección para los tres $\eta$); robustez: semillas 1–50 |
-| Malla de Tikhonov | 61 valores de $\lambda/\sigma_1^2$ entre $10^{-10}$ y $1$ (6 por década) |
-| SVD truncada | $k=1,\dots,128$ |
-| Discrepancia | $\tau=1.1$, $\delta=\lVert e\rVert$ |
-| Tolerancia de `scipy.linalg.pinv` | por defecto, `rtol = max(m,n)·eps` → umbral $2.84\times10^{-14}$, rango 89 |
+| Semilla del ruido | 2026 (robustez: semillas 1–50) |
+| Malla de $\lambda/\sigma_1^2$ | 61 valores entre $10^{-10}$ y $1$ |
+| SVD truncada | $k = 1,\dots,128$ |
+| Discrepancia | $\tau = 1.1$, $\delta = \lVert e\rVert$ |
+| Umbral de `pinv` (SciPy, por defecto) | $2.84\times10^{-14}$ → rango 89 |
+
+Detalle completo (valores singulares, versiones) en `resultados/configuracion.json`.
 
 ## Video
 
-*Pendiente (entrega final).* Enlace: —
+*Pendiente (entrega final).*
 
 ## Referencias
 
@@ -120,7 +117,7 @@ Cada script también se puede ejecutar por separado desde la raíz del repositor
 
 [4] S. Gazzola, P. C. Hansen y J. G. Nagy, "IR Tools: a MATLAB package of iterative regularization methods and large-scale test problems," *Numerical Algorithms*, vol. 81, pp. 773–811, 2019, doi: 10.1007/s11075-018-0570-7.
 
-[5] SciPy, "scipy.linalg.pinv" y "scipy.linalg.lstsq," documentación de SciPy. [En línea]. Disponible: https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.pinv.html
+[5] SciPy, "scipy.linalg.pinv" y "scipy.linalg.lstsq," documentación de SciPy. [En línea]. Disponible: https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.pinv.html; https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.lstsq.html. [Consultado: 4 nov. 2026].
 
 [6] A. N. Tikhonov, "Solution of incorrectly formulated problems and the regularization method," *Soviet Mathematics Doklady*, vol. 4, pp. 1035–1038, 1963.
 
