@@ -1,6 +1,6 @@
 # Desarrollo matemático
 
-**Proyecto:** Reconstrucción de señales con ruido — pseudoinversa, valores singulares y regularización de Tikhonov
+**Proyecto:** Reconstrucción de señales con ruido pseudoinversa, valores singulares y regularización de Tikhonov
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
 **Estado:** entrega parcial
 
