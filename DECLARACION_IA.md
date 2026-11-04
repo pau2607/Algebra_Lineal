@@ -1,6 +1,5 @@
 # Declaración de uso de inteligencia artificial
 
-> Revisar y completar antes de entregar. La declaración debe describir el uso real; si el grupo modifica o reescribe partes, debe indicarlo.
 
 | Campo | Detalle |
 |---|---|
