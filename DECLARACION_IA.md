@@ -4,7 +4,7 @@
 | Campo | Detalle |
 |---|---|
 | Herramienta | Claude (Anthropic), modelo Claude Opus 5.5, en claude.ai |
-| Fecha de uso | 4 de noviembre de 2026 |
+| Fecha de uso | Octubre/Noviembre de 2026 |
 | Finalidad | Generar una primera versión del código del experimento, de las pruebas automáticas y de los borradores de los documentos de la entrega parcial (desarrollo matemático, resultados, guion, organización y README) |
 | Instrucción principal | "Ayudame a comprender a profundidad el tema" adjuntando el artículo de referencia del docente  |
 | Partes en las que se usó | `reconstruccion/`, `scripts/`, `tests/`, `docs/`, `README.md` |
