@@ -31,7 +31,7 @@ print(f"Problema: n = {N}, s = {S}, semilla = {SEMILLA}")
 print(f"  sigma_1 = {sigma[0]:.6g}, sigma_n = {sigma[-1]:.3g}, kappa_2(A) = {sigma[0] / sigma[-1]:.3g}")
 print(f"  A simétrica: {np.allclose(A, A.T)}; filas suman 1: {np.allclose(A.sum(axis=1), 1)}")
 
-# Comprobación de la fórmula espectral contra el sistema aumentado (QR)
+
 dif_max = 0.0
 b_prueba = b_limpio + datos.ruido(b_limpio, 1e-3, z)
 for lam in lambdas[::5]:
@@ -50,26 +50,24 @@ for eta in ETAS:
     delta = np.linalg.norm(e)   # cota de ruido: en este experimento se toma delta = ||e||
     print(f"\neta = {eta:g}  (||e|| = {delta:.4g}, ||e||/||Ax|| = {delta / np.linalg.norm(b_limpio):.3g})")
 
-    # --- Pseudoinversa numérica y completa
+   
     x_pinv, rango, umbral = M.pseudoinversa_numerica(A, b)
     x_pinv_c = M.pseudoinversa_completa(svd, b)
 
-    # --- SVD truncada para todos los k
+    
     X_k = [M.svd_truncada(svd, b, int(k)) for k in KS]
     err_k = np.array([error_relativo(x, x_true) for x in X_k])
     res_k = np.array([residuo(A, x, b) for x in X_k])
     nor_k = np.array([norma(x) for x in X_k])
 
-    # --- Tikhonov en la malla
     X_l = [M.tikhonov_espectral(svd, b, lam) for lam in lambdas]
     err_l = np.array([error_relativo(x, x_true) for x in X_l])
     res_l = np.array([residuo(A, x, b) for x in X_l])
     nor_l = np.array([norma(x) for x in X_l])
 
-    # --- Selección SIN x_true (discrepancia)
     lam_d, i_d = SEL.discrepancia_tikhonov(A, b, svd, lambdas, delta, TAU)
     k_d, j_d = SEL.discrepancia_tsvd(A, b, svd, KS, delta, TAU)
-    # --- Referencia oráculo (CON x_true, solo para evaluar)
+    
     i_o, _ = SEL.oraculo(X_l, x_true)
     j_o, _ = SEL.oraculo(X_k, x_true)
 
@@ -113,11 +111,11 @@ guardar_json({
     "entorno": entorno(),
 }, "configuracion.json")
 
-# ==========================================================================
-# Figuras
-# ==========================================================================
 
-# 2. Señal, datos limpios y perturbados
+# Figuras
+
+
+# Señal, datos limpios y perturbados
 fig, axs = plt.subplots(1, 3, figsize=(14, 3.6))
 axs[0].plot(t, x_true, color=TINTA, label=r"señal $x_{true}$")
 axs[0].plot(t, b_limpio, color=C1, label=r"datos limpios $Ax_{true}$")
@@ -137,7 +135,7 @@ axs[2].set_xlabel("t")
 axs[2].legend(loc="lower right", ncol=3, fontsize=8)
 guardar(fig, "02_senal_y_datos.png")
 
-# 3. Espectro singular y coeficientes de Picard
+# Espectro singular y coeficientes de Picard
 fig, ax = plt.subplots(figsize=(7.5, 4.2))
 i = np.arange(1, N + 1)
 ax.semilogy(i, sigma, color=TINTA, lw=2, label=r"$\sigma_i$")
@@ -153,7 +151,7 @@ ax.set_ylim(1e-19, 10)
 ax.legend(loc="lower left", ncol=1, frameon=True, facecolor=SUPERFICIE, edgecolor=REJILLA, framealpha=1)
 guardar(fig, "03_espectro_picard.png")
 
-# 4. Curvas de Tikhonov: error, residuo y norma frente a lambda
+# Curvas de Tikhonov: error, residuo y norma frente a lambda
 fig, axs = plt.subplots(1, 3, figsize=(13, 3.8))
 for eta in ETAS:
     r = resultados[eta]
@@ -176,7 +174,7 @@ axs[0].legend(loc="upper right", fontsize=8)
 axs[2].legend(loc="upper right", fontsize=8)
 guardar(fig, "04_curvas_tikhonov.png")
 
-# 5. Curvas de SVD truncada
+# Curvas de SVD truncada
 fig, axs = plt.subplots(1, 2, figsize=(10, 3.8))
 for eta in ETAS:
     r = resultados[eta]
@@ -197,7 +195,7 @@ axs[0].plot([], [], "s", color=TENUE, label="discrepancia")
 axs[0].legend(loc="upper left", fontsize=8)
 guardar(fig, "05_curvas_tsvd.png")
 
-# 6. Reconstrucciones elegidas por discrepancia
+# Reconstrucciones elegidas por discrepancia
 fig, axs = plt.subplots(1, 3, figsize=(13, 3.8), sharey=True)
 for ax, eta in zip(axs, ETAS):
     r = resultados[eta]
@@ -210,7 +208,7 @@ for ax, eta in zip(axs, ETAS):
 axs[0].set_ylim(-0.3, 1.3)
 guardar(fig, "06_reconstrucciones.png")
 
-# 6b. La pseudoinversa numérica: amplificación del ruido
+# La pseudoinversa numérica: amplificación del ruido
 fig, axs = plt.subplots(1, 2, figsize=(11, 3.6), gridspec_kw={"width_ratios": [2, 1]})
 x_p = resultados[ETAS[0]]["x_pinv"]
 axs[0].plot(t, x_p, color=C1, lw=1.0, label=f"pinv numérica, {etiqueta_eta(ETAS[0])}")
@@ -230,7 +228,7 @@ axs[1].set_title(r"$\|x_{pinv}\|$ crece en proporción a $\eta$")
 axs[1].grid(axis="x", visible=False)
 guardar(fig, "06b_pseudoinversa.png")
 
-# 7. Curva L (exploratoria: solo se dibuja, no se usa para elegir)
+# Curva L (exploratoria: solo se dibuja, no se usa para elegir)
 fig, ax = plt.subplots(figsize=(6, 4.4))
 for eta in ETAS:
     r = resultados[eta]
@@ -245,7 +243,7 @@ ax.plot([], [], "s", color=TENUE, label="discrepancia")
 ax.legend(loc="upper right", fontsize=8)
 guardar(fig, "07_curva_L.png")
 
-# 8. Factores de filtro
+# Factores de filtro
 fig, ax = plt.subplots(figsize=(7.5, 3.8))
 eta = 1e-3
 r = resultados[eta]
