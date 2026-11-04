@@ -1,8 +1,3 @@
-"""Generación del problema controlado (sección 8 del artículo de referencia).
-
-Todas las funciones son deterministas: la única aleatoriedad está en `ruido`,
-que recibe la semilla de forma explícita.
-"""
 
 import numpy as np
 
