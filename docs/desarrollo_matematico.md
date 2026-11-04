@@ -4,9 +4,7 @@
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
 **Estado:** entrega parcial
 
-Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2. En Tikhonov, $\lambda$ es **directamente** el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
-
----
+Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2. En Tikhonov, $\lambda$ es directamente el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
 
 ## 1. Problema, objetivo y alcance
 
@@ -43,8 +41,6 @@ $$
 
 Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2$, SVD calculada con NumPy (no se programa desde cero), principio de discrepancia y curva L solo como gráfico exploratorio.
 
----
-
 ## 2. Conceptos del curso que se utilizan
 
 | Concepto | Dónde aparece en el proyecto |
@@ -55,8 +51,6 @@ Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2
 | Formas cuadráticas definidas positivas | Unicidad de la solución de Tikhonov |
 | SVD y pseudoinversa | Fórmulas de las tres reconstrucciones, filtrado espectral |
 | Número de condición | Amplificación del ruido |
-
----
 
 ## 3. Mínimos cuadrados y pseudoinversa
 
@@ -92,8 +86,6 @@ Cada sumando se anula con $z_i=u_i^Tb/\sigma_i$; $\lVert b_\perp\rVert^2$ no dep
 
 Observación. $x^\dagger$ es una elección entre todos los ajustes óptimos. Si $x_{\mathrm{true}}$ tiene componente en $\ker A$, ningún método basado solo en $b$ puede recuperarla.
 
----
-
 ## 4. Por qué se amplifica el ruido
 
 Por linealidad, $x^\dagger = A^\dagger Ax_{\mathrm{true}} + A^\dagger e$, y la parte que viene del ruido es
@@ -120,8 +112,6 @@ Aquí $u_i=v_i=e_i$, $\sigma_1=1$, $\sigma_2=10^{-3}$.
 
 Conclusión: un residuo pequeño no certifica una buena reconstrucción. El script `scripts/01_ejemplo_diagonal.py` y las pruebas `test_diagonal_*` verifican estos números.
 
----
-
 ## 5. SVD truncada
 
 Para $k\le r$,
@@ -141,8 +131,6 @@ que no crece al aumentar $k$ (lo comprueba `test_residuo_tsvd_no_crece_con_k`).
 ### 5.1 Pseudoinversa numérica ≠ inversa sin regularizar
 
 `scipy.linalg.pinv` descarta los $\sigma_i<\texttt{rtol}\cdot\sigma_1$ con $\texttt{rtol}=\max(m,n)\,\varepsilon$ por defecto [5]. En nuestro problema ese umbral es $\approx2.84\times10^{-14}$ y conserva 89 de 128 valores singulares. Es decir, la "pseudoinversa numérica" ya es una SVD truncada con $k=89$; lo informamos explícitamente. Para comparar, también calculamos la suma sobre los 128 $\sigma_i$ positivos ("pseudoinversa completa"). Los $\sigma_i$ con $i\gtrsim95$ forman una meseta cerca de $10^{-16}$: son errores de redondeo de la SVD, no información del operador.
-
----
 
 ## 6. Regularización de Tikhonov
 
@@ -199,8 +187,6 @@ $$
 
 Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que el residuo crece con $\lambda$. Esto hace que la regla de discrepancia de la sección 8 esté bien definida.
 
----
-
 ## 7. Estabilidad, sesgo y descomposición del error
 
 ### 7.1 Cota de estabilidad
@@ -227,8 +213,6 @@ $$
 
 Límites: $\lambda\to0^+$ da $x_\lambda\to A^\dagger b$; $\lambda\to\infty$ da $x_\lambda\to0$ (`test_limites_de_lambda`). El mejor $\lambda$ depende de la escala de $A$, del ruido y de la señal; por eso la malla se expresa como $\lambda/\sigma_1^2\in[10^{-10},1]$.
 
----
-
 ## 8. Elección del parámetro sin conocer la verdad
 
 ### 8.1 Oráculo
@@ -249,8 +233,6 @@ En este experimento tomamos $\delta=\lVert e\rVert$ (conocido porque generamos e
 ### 8.3 Curva L (exploratoria)
 
 Dibujamos $\log\lVert Ax_\lambda-b\rVert$ frente a $\log\lVert x_\lambda\rVert$. Su esquina es una heurística de compromiso; en esta entrega solo se grafica, no se usa para elegir.
-
----
 
 ## Referencias
 
