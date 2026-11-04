@@ -24,7 +24,7 @@ soluciones = {
     "Tikhonov (λ=1e-4)": M.tikhonov_espectral(svd, b, lam),
 }
 
-# Valores calculados a mano en el artículo
+
 a_mano = {
     "Pseudoinversa": (np.array([1.0, 11.0]), 10.0, 0.0),
     "SVD truncada (k=1)": (np.array([1.0, 0.0]), 1.0, 0.011),
@@ -51,14 +51,14 @@ for nombre, x in soluciones.items():
     })
     print(f"  {nombre:22s} x = ({x[0]:.5f}, {x[1]:.5f})  error = {err:.4f}  residuo = {res:.3g}")
 
-# Factores de filtro de Tikhonov
+
 f = M.factores_filtro(svd.sigma, lam)
 print(f"  factores de filtro f_i(1e-4) = {np.array2string(f, precision=6)}")
 print(f"  amplificación del ruido en la dirección 2: 1/sigma_2 = {1 / svd.sigma[1]:.0f}")
 print("  Todas las cifras coinciden con los cálculos a mano.")
 guardar_tabla(filas, "01_ejemplo_diagonal")
 
-# Figura equivalente a la Figura 1 del artículo
+
 fig, ax = plt.subplots(figsize=(6.4, 3.6))
 ancho = 0.26
 posiciones = np.arange(2)
