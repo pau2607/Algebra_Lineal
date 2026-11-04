@@ -14,9 +14,9 @@ from .metodos import SVD, svd_truncada, tikhonov_espectral
 from .metricas import error_relativo, residuo
 
 
-# --------------------------------------------------------------------------
+
 # Principio de discrepancia (no usa x_true)
-# --------------------------------------------------------------------------
+
 
 def discrepancia_tikhonov(A, b, svd: SVD, lambdas, delta: float, tau: float = 1.1):
     """Mayor lambda de la malla cuyo residuo no excede tau * delta.
@@ -47,9 +47,8 @@ def discrepancia_tsvd(A, b, svd: SVD, ks, delta: float, tau: float = 1.1):
     return int(ks[idx]), int(idx)
 
 
-# --------------------------------------------------------------------------
 # Referencia oráculo (usa x_true; NO es un método aplicable a datos reales)
-# --------------------------------------------------------------------------
+
 
 def oraculo(reconstrucciones, x_true):
     """Índice y error del parámetro con menor error relativo respecto de x_true."""
