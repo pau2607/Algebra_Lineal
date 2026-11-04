@@ -2,7 +2,7 @@
 
 **Proyecto:** Reconstrucción de señales con ruido — pseudoinversa, valores singulares y regularización de Tikhonov
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
-**Estado:** entrega parcial (`avance-parcial`)
+**Estado:** entrega parcial
 
 Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2. En Tikhonov, $\lambda$ es **directamente** el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
 
@@ -36,13 +36,12 @@ $$
 
 1. Reproducir el ejemplo diagonal de dos coordenadas y comprobar que el código coincide con los cálculos a mano (tolerancia $10^{-10}$).
 2. Para cada $\eta$, comparar pseudoinversa numérica, SVD truncada y Tikhonov midiendo error relativo $\lVert x-x_{\mathrm{true}}\rVert/\lVert x_{\mathrm{true}}\rVert$, residuo $\lVert Ax-b\rVert$ y norma $\lVert x\rVert$.
-3. Elegir el parámetro con una regla que **no usa** $x_{\mathrm{true}}$ (principio de discrepancia) y cuantificar cuánto se aleja del mejor parámetro posible (oráculo), con 50 semillas.
+3. Elegir el parámetro con una regla que no usa $x_{\mathrm{true}}$ (principio de discrepancia) y cuantificar cuánto se aleja del mejor parámetro posible (oráculo), con 50 semillas.
 4. Explicar con la SVD por qué la pseudoinversa falla y qué parte del error no puede eliminarse regularizando.
 
 ### 1.4 Alcance
 
 Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2$, SVD calculada con NumPy (no se programa desde cero), principio de discrepancia y curva L solo como gráfico exploratorio.
-No incluye (posibles ampliaciones): penalización de diferencias $\lambda\lVert Lx\rVert^2$, imágenes, validación cruzada generalizada. No se pretende recuperar información que la observación destruyó.
 
 ---
 
@@ -91,7 +90,7 @@ $$
 
 Cada sumando se anula con $z_i=u_i^Tb/\sigma_i$; $\lVert b_\perp\rVert^2$ no depende de $x$. Como $x_0$ no cambia el residuo y $\lVert x\rVert^2=\sum z_i^2+\lVert x_0\rVert^2$, la norma mínima se obtiene con $x_0=0$. $\square$
 
-**Observación.** $x^\dagger$ es una elección entre todos los ajustes óptimos. Si $x_{\mathrm{true}}$ tiene componente en $\ker A$, ningún método basado solo en $b$ puede recuperarla.
+Observación. $x^\dagger$ es una elección entre todos los ajustes óptimos. Si $x_{\mathrm{true}}$ tiene componente en $\ker A$, ningún método basado solo en $b$ puede recuperarla.
 
 ---
 
@@ -105,7 +104,7 @@ A^{\dagger}e=\sum_{i=1}^{r}\frac{u_i^Te}{\sigma_i}\,v_i ,
 \lVert A^\dagger e\rVert=\Big(\sum_i \frac{(u_i^Te)^2}{\sigma_i^2}\Big)^{1/2}\le \frac{\lVert e\rVert}{\sigma_r}.
 $$
 
-El coeficiente de $v_i$ es el coeficiente del ruido en la dirección $u_i$ multiplicado por $1/\sigma_i$. Como $U$ es ortogonal y $e$ es gaussiano isotrópico, los $u_i^Te$ tienen todos aproximadamente el mismo tamaño, $\lVert e\rVert/\sqrt n$. En cambio, para datos limpios $u_i^T(Ax_{\mathrm{true}})=\sigma_i\,v_i^Tx_{\mathrm{true}}$ decae con $\sigma_i$. Hay entonces un índice a partir del cual los coeficientes de $b$ son **solo ruido** y dividirlos entre $\sigma_i$ produce oscilaciones enormes. Esto es lo que muestra el gráfico de Picard (`resultados/figuras/03_espectro_picard.png`).
+El coeficiente de $v_i$ es el coeficiente del ruido en la dirección $u_i$ multiplicado por $1/\sigma_i$. Como $U$ es ortogonal y $e$ es gaussiano isotrópico, los $u_i^Te$ tienen todos aproximadamente el mismo tamaño, $\lVert e\rVert/\sqrt n$. En cambio, para datos limpios $u_i^T(Ax_{\mathrm{true}})=\sigma_i\,v_i^Tx_{\mathrm{true}}$ decae con $\sigma_i$. Hay entonces un índice a partir del cual los coeficientes de $b$ son solo ruido y dividirlos entre $\sigma_i$ produce oscilaciones enormes. Esto es lo que muestra el gráfico de Picard (`resultados/figuras/03_espectro_picard.png`).
 
 ### 4.1 Ejemplo diagonal (cálculo a mano)
 
@@ -115,11 +114,11 @@ $$
 
 Aquí $u_i=v_i=e_i$, $\sigma_1=1$, $\sigma_2=10^{-3}$.
 
-- **Pseudoinversa:** $x^\dagger=(1/1,\ 0.011/10^{-3})=(1,11)$. Residuo $0$, error $\lVert(0,10)\rVert=10$. La dirección 2 multiplica el ruido por $1/\sigma_2=1000$: un error de $0.01$ en el dato se vuelve un error de $10$ en la solución.
-- **SVD truncada, $k=1$:** $x_1=(1,0)$. Error $1$, residuo $\lVert(0,-0.011)\rVert=0.011$.
-- **Tikhonov, $\lambda=10^{-4}$:** $x_\lambda=\Big(\tfrac{1}{1+10^{-4}},\ \tfrac{10^{-3}\cdot0.011}{10^{-6}+10^{-4}}\Big)=\Big(\tfrac{1}{1.0001},\tfrac{0.000011}{0.000101}\Big)\approx(0.99990,\ 0.10891)$. Error $\approx0.8911$.
+- Pseudoinversa: $x^\dagger=(1/1,\ 0.011/10^{-3})=(1,11)$. Residuo $0$, error $\lVert(0,10)\rVert=10$. La dirección 2 multiplica el ruido por $1/\sigma_2=1000$: un error de $0.01$ en el dato se vuelve un error de $10$ en la solución.
+- SVD truncada, $k=1$: $x_1=(1,0)$. Error $1$, residuo $\lVert(0,-0.011)\rVert=0.011$.
+- Tikhonov, $\lambda=10^{-4}$: $x_\lambda=\Big(\tfrac{1}{1+10^{-4}},\ \tfrac{10^{-3}\cdot0.011}{10^{-6}+10^{-4}}\Big)=\Big(\tfrac{1}{1.0001},\tfrac{0.000011}{0.000101}\Big)\approx(0.99990,\ 0.10891)$. Error $\approx0.8911$.
 
-Conclusión: **un residuo pequeño no certifica una buena reconstrucción**. El script `scripts/01_ejemplo_diagonal.py` y las pruebas `test_diagonal_*` verifican estos números.
+Conclusión: un residuo pequeño no certifica una buena reconstrucción. El script `scripts/01_ejemplo_diagonal.py` y las pruebas `test_diagonal_*` verifican estos números.
 
 ---
 
@@ -137,27 +136,27 @@ $$
 \lVert Ax_k-b\rVert^2=\sum_{i=k+1}^{r}(u_i^Tb)^2+\lVert b_\perp\rVert^2 ,
 $$
 
-que **no crece** al aumentar $k$ (lo comprueba `test_residuo_tsvd_no_crece_con_k`).
+que no crece al aumentar $k$ (lo comprueba `test_residuo_tsvd_no_crece_con_k`).
 
 ### 5.1 Pseudoinversa numérica ≠ inversa sin regularizar
 
-`scipy.linalg.pinv` descarta los $\sigma_i<\texttt{rtol}\cdot\sigma_1$ con $\texttt{rtol}=\max(m,n)\,\varepsilon$ por defecto [5]. En nuestro problema ese umbral es $\approx2.84\times10^{-14}$ y conserva **89 de 128** valores singulares. Es decir, la "pseudoinversa numérica" ya es una SVD truncada con $k=89$; lo informamos explícitamente. Para comparar, también calculamos la suma sobre los 128 $\sigma_i$ positivos ("pseudoinversa completa"). Los $\sigma_i$ con $i\gtrsim95$ forman una meseta cerca de $10^{-16}$: son errores de redondeo de la SVD, no información del operador.
+`scipy.linalg.pinv` descarta los $\sigma_i<\texttt{rtol}\cdot\sigma_1$ con $\texttt{rtol}=\max(m,n)\,\varepsilon$ por defecto [5]. En nuestro problema ese umbral es $\approx2.84\times10^{-14}$ y conserva 89 de 128 valores singulares. Es decir, la "pseudoinversa numérica" ya es una SVD truncada con $k=89$; lo informamos explícitamente. Para comparar, también calculamos la suma sobre los 128 $\sigma_i$ positivos ("pseudoinversa completa"). Los $\sigma_i$ con $i\gtrsim95$ forman una meseta cerca de $10^{-16}$: son errores de redondeo de la SVD, no información del operador.
 
 ---
 
 ## 6. Regularización de Tikhonov
 
 $$
-x_\lambda=\arg\min_x\Big\{\lVert Ax-b\rVert^2+\lambda\lVert x\rVert^2\Big\},\qquad \lambda>0 .
+x_\lambda=\arg\min_x\{\lVert Ax-b\rVert^2+\lambda\lVert x\rVert^2\},\qquad \lambda>0 .
 $$
 
-**Teorema 2 (unicidad y fórmula espectral).** Para todo $\lambda>0$ el problema tiene solución única
+Teorema 2 (unicidad y fórmula espectral). Para todo $\lambda>0$ el problema tiene solución única
 
 $$
 x_\lambda=(A^TA+\lambda I)^{-1}A^Tb=\sum_{i=1}^{r}\frac{\sigma_i}{\sigma_i^2+\lambda}\,(u_i^Tb)\,v_i .
 $$
 
-*Demostración.* La función $J(x)=\lVert Ax-b\rVert^2+\lambda\lVert x\rVert^2$ tiene gradiente $\nabla J=2A^T(Ax-b)+2\lambda x$ y hessiana $2(A^TA+\lambda I)$. Para $z\neq0$,
+Demostración. La función $J(x)=\lVert Ax-b\rVert^2+\lambda\lVert x\rVert^2$ tiene gradiente $\nabla J=2A^T(Ax-b)+2\lambda x$ y hessiana $2(A^TA+\lambda I)$. Para $z\neq0$,
 
 $$
 z^T(A^TA+\lambda I)z=\lVert Az\rVert^2+\lambda\lVert z\rVert^2\ \ge\ \lambda\lVert z\rVert^2>0,
@@ -180,11 +179,11 @@ x_\lambda=\sum_{i=1}^{r}f_i(\lambda)\,\frac{u_i^Tb}{\sigma_i}\,v_i,\qquad f_i(\l
 $$
 
 - Si $\sigma_i^2\gg\lambda$, $f_i\approx1$: la dirección se conserva.
-- Si $\sigma_i^2\ll\lambda$, $f_i\approx\sigma_i^2/\lambda$: la dirección se atenúa y el término queda $\approx\sigma_i(u_i^Tb)/\lambda$, que **no** explota.
+- Si $\sigma_i^2\ll\lambda$, $f_i\approx\sigma_i^2/\lambda$: la dirección se atenúa y el término queda $\approx\sigma_i(u_i^Tb)/\lambda$, que no explota.
 
 La SVD truncada corresponde a $f_i\in\{0,1\}$ (corte abrupto); Tikhonov es un filtro suave (`resultados/figuras/08_factores_filtro.png`).
 
-**Decisión de implementación.** Calculamos $\sigma_i/(\sigma_i^2+\lambda)\cdot(u_i^Tb)$ en lugar de $f_i\cdot(u_i^Tb)/\sigma_i$ para no dividir entre $\sigma_i\approx10^{-17}$. Contrastamos con el sistema aumentado
+Calculamos $\sigma_i/(\sigma_i^2+\lambda)\cdot(u_i^Tb)$ en lugar de $f_i\cdot(u_i^Tb)/\sigma_i$ para no dividir entre $\sigma_i\approx10^{-17}$. Contrastamos con el sistema aumentado
 
 $$
 \min_x\left\lVert\begin{pmatrix}A\\ \sqrt\lambda\,I\end{pmatrix}x-\begin{pmatrix}b\\0\end{pmatrix}\right\rVert^2,
@@ -198,7 +197,7 @@ $$
 \lVert Ax_\lambda-b\rVert^2=\sum_{i=1}^{r}\left(\frac{\lambda}{\sigma_i^2+\lambda}\right)^2(u_i^Tb)^2+\lVert b_\perp\rVert^2 .
 $$
 
-Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que el residuo **crece** con $\lambda$. Esto hace que la regla de discrepancia de la sección 8 esté bien definida (`test_residuo_tikhonov_crece_con_lambda`).
+Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que el residuo crece con $\lambda$. Esto hace que la regla de discrepancia de la sección 8 esté bien definida.
 
 ---
 
@@ -212,7 +211,7 @@ $$
 \lVert x_\lambda(b+e)-x_\lambda(b)\rVert=\Big\lVert\sum_i\frac{\sigma_i}{\sigma_i^2+\lambda}(u_i^Te)v_i\Big\rVert\le\max_{s\ge0}\frac{s}{s^2+\lambda}\,\lVert e\rVert=\frac{\lVert e\rVert}{2\sqrt\lambda}.
 $$
 
-El máximo se obtiene de $(s-\sqrt\lambda)^2\ge0\iff s^2+\lambda\ge2s\sqrt\lambda\iff \dfrac{s}{s^2+\lambda}\le\dfrac{1}{2\sqrt\lambda}$, con igualdad en $s=\sqrt\lambda$. Comparado con la pseudoinversa (amplificación $1/\sigma_r$), Tikhonov amplifica a lo sumo $1/(2\sqrt\lambda)$, **independiente de cuán pequeño sea** $\sigma_r$. Verificado en `test_cota_de_estabilidad`.
+El máximo se obtiene de $(s-\sqrt\lambda)^2\ge0\iff s^2+\lambda\ge2s\sqrt\lambda\iff \dfrac{s}{s^2+\lambda}\le\dfrac{1}{2\sqrt\lambda}$, con igualdad en $s=\sqrt\lambda$. Comparado con la pseudoinversa (amplificación $1/\sigma_r$), Tikhonov amplifica a lo sumo $1/(2\sqrt\lambda)$, independiente de cuán pequeño sea $\sigma_r$.
 
 ### 7.2 Descomposición sesgo + ruido
 
@@ -222,8 +221,8 @@ $$
 x_\lambda-x_{\mathrm{true}}=\underbrace{\sum_{i=1}^{r}\big(f_i(\lambda)-1\big)(v_i^Tx_{\mathrm{true}})\,v_i\;-\;P_{\ker A}\,x_{\mathrm{true}}}_{\text{sesgo (no depende del ruido)}}\;+\;\underbrace{\sum_{i=1}^{r}f_i(\lambda)\frac{u_i^Te}{\sigma_i}\,v_i}_{\text{ruido propagado}} .
 $$
 
-- Al **aumentar** $\lambda$: los $f_i$ bajan, el término de ruido baja (cota $\lVert e\rVert/(2\sqrt\lambda)$) y el sesgo sube.
-- Al **disminuir** $\lambda$: lo contrario.
+- Al aumentar $\lambda$: los $f_i$ bajan, el término de ruido baja (cota $\lVert e\rVert/(2\sqrt\lambda)$) y el sesgo sube.
+- Al disminuir $\lambda$: lo contrario.
 - $P_{\ker A}x_{\mathrm{true}}$ no depende de $\lambda$: es información perdida.
 
 Límites: $\lambda\to0^+$ da $x_\lambda\to A^\dagger b$; $\lambda\to\infty$ da $x_\lambda\to0$ (`test_limites_de_lambda`). El mejor $\lambda$ depende de la escala de $A$, del ruido y de la señal; por eso la malla se expresa como $\lambda/\sigma_1^2\in[10^{-10},1]$.
@@ -234,33 +233,22 @@ Límites: $\lambda\to0^+$ da $x_\lambda\to A^\dagger b$; $\lambda\to\infty$ da $
 
 ### 8.1 Oráculo
 
-En un experimento sintético podemos calcular el error para cada $\lambda$ de la malla y tomar el mínimo. Esto **usa $x_{\mathrm{true}}$**, que no existe en un problema real. Lo usamos solo como referencia para evaluar la regla que sí es aplicable.
+En un experimento sintético podemos calcular el error para cada $\lambda$ de la malla y tomar el mínimo. Esto usa $x_{\mathrm{true}}$, que no existe en un problema real. Lo usamos solo como referencia para evaluar la regla que sí es aplicable.
 
 ### 8.2 Principio de discrepancia (Morozov [7])
 
 Si se conoce una cota $\delta\approx\lVert e\rVert$, no tiene sentido ajustar los datos mejor que el nivel del ruido: un residuo menor que $\lVert e\rVert$ significa que la solución está reproduciendo ruido. La regla es:
 
-> Elegir el **mayor** $\lambda$ de la malla tal que $\lVert Ax_\lambda-b\rVert\le\tau\delta$, con $\tau=1.1$.
-> Para la SVD truncada: el **menor** $k$ tal que $\lVert Ax_k-b\rVert\le\tau\delta$.
+> Elegir el mayor $\lambda$ de la malla tal que $\lVert Ax_\lambda-b\rVert\le\tau\delta$, con $\tau=1.1$.
+> Para la SVD truncada: el menor $k$ tal que $\lVert Ax_k-b\rVert\le\tau\delta$.
 
-Por la monotonía de la sección 6.2 (y 5), el conjunto de $\lambda$ viables es un intervalo inicial de la malla y la regla elige su extremo derecho. Supuestos: (i) $\delta$ es una buena estimación del ruido; (ii) los errores de modelo son menores que el ruido; (iii) el umbral es alcanzable en la malla, lo que exige $\min_\lambda\lVert Ax_\lambda-b\rVert\le\tau\delta$. Si no se cumple (iii), la función devuelve "no viable" en lugar de inventar un valor. En el código, las funciones de discrepancia **no reciben** $x_{\mathrm{true}}$ (lo comprueba `test_discrepancia_no_recibe_la_verdad`).
+Por la monotonía de la sección 6.2 (y 5), el conjunto de $\lambda$ viables es un intervalo inicial de la malla y la regla elige su extremo derecho. Supuestos: (i) $\delta$ es una buena estimación del ruido; (ii) los errores de modelo son menores que el ruido; (iii) el umbral es alcanzable en la malla, lo que exige $\min_\lambda\lVert Ax_\lambda-b\rVert\le\tau\delta$. Si no se cumple (iii), la función devuelve "no viable" en lugar de inventar un valor. En el código, las funciones de discrepancia no reciben $x_{\mathrm{true}}$ (lo comprueba `test_discrepancia_no_recibe_la_verdad`).
 
 En este experimento tomamos $\delta=\lVert e\rVert$ (conocido porque generamos el ruido) y estudiamos aparte qué ocurre si $\delta$ está mal estimado ($\delta=0.5\lVert e\rVert$ y $2\lVert e\rVert$).
 
 ### 8.3 Curva L (exploratoria)
 
 Dibujamos $\log\lVert Ax_\lambda-b\rVert$ frente a $\log\lVert x_\lambda\rVert$. Su esquina es una heurística de compromiso; en esta entrega solo se grafica, no se usa para elegir.
-
----
-
-## 9. Preguntas de defensa (sección 11 del artículo), con nuestras respuestas
-
-1. **¿Cómo puede una solución de residuo cero ser mala?** Porque el residuo mide el ajuste a $b$, que contiene ruido. Ajustar exactamente obliga a reproducir el ruido y, en direcciones con $\sigma_i$ pequeño, eso exige coeficientes $u_i^Te/\sigma_i$ enormes. Ejemplo: $(1,11)$ con residuo 0 y error 10.
-2. **¿Qué dirección del ejemplo diagonal amplifica más el ruido?** La segunda ($v_2=e_2$), porque $\sigma_2=10^{-3}$: el factor es $1/\sigma_2=1000$.
-3. **¿Pseudoinversa vs. truncamiento numérico?** $A^\dagger$ divide entre todos los $\sigma_i>0$. La función `pinv` usa una tolerancia y trata como cero los $\sigma_i$ por debajo de ella; en nuestro caso conserva 89 de 128. Es una SVD truncada con un umbral pensado para el redondeo, no para el ruido de los datos, y por eso aún da errores de $10^{8}$–$10^{10}$.
-4. **¿Por qué $\lambda>0$ asegura unicidad?** Porque $z^T(A^TA+\lambda I)z=\lVert Az\rVert^2+\lambda\lVert z\rVert^2>0$ para $z\neq0$, aunque $A$ tenga núcleo.
-5. **¿Qué usa el oráculo que no se tiene en la realidad?** La señal verdadera $x_{\mathrm{true}}$, para calcular el error.
-6. **¿Qué se gana y qué se pierde al aumentar $\lambda$?** Se gana estabilidad (menos ruido propagado, cota $\lVert e\rVert/2\sqrt\lambda$); se pierde fidelidad: más sesgo, mayor residuo y la señal se suaviza (los bordes del pulso se redondean).
 
 ---
 
