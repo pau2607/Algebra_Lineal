@@ -21,7 +21,7 @@ Total: 23 pruebas, todas aprobadas (`python -m pytest -q`).
 ## 2. Espectro del operador
 
 - $\sigma_1\approx1.001$ y los $\sigma_i$ decaen de forma aproximadamente gaussiana hasta $\sim10^{-14}$ en $i\approx90$; desde $i\approx95$ hay una meseta en $\sim10^{-16}$ que es redondeo de la SVD.
-- El $\kappa_2(A)$ calculado es $2.2\times10^{16}$: $A$ es numéricamente singular. `scipy.linalg.pinv` (umbral $2.84\times10^{-14}$) y `numpy.linalg.matrix_rank` dan rango numérico **89**.
+- El $\kappa_2(A)$ calculado es $2.2\times10^{16}$: $A$ es numéricamente singular. `scipy.linalg.pinv` (umbral $2.84\times10^{-14}$) y `numpy.linalg.matrix_rank` dan rango numérico 89.
 - En el gráfico de Picard (fig. 03), los $|u_i^Tb|$ siguen a $\sigma_i$ hasta que chocan con el nivel del ruido, $\approx\lVert e\rVert/\sqrt n$ ($4\times10^{-5}$, $4\times10^{-4}$ y $4\times10^{-3}$), y a partir de ahí quedan planos. Solo $\approx44$ valores singulares superan el nivel de ruido para $\eta=10^{-3}$ (tabla 04): esas son las direcciones que los datos realmente informan.
 
 ## 3. Comparación de métodos (semilla 2026)
@@ -36,11 +36,11 @@ Fragmento de `resultados/tablas/02_resumen_metodos.md` (error = error relativo):
 
 ### Interpretación
 
-1. **La pseudoinversa es inservible aunque ajuste los datos.** Su residuo está entre $0.54$ y $0.69\,\lVert e\rVert$, es decir, *más pequeño que el propio ruido*: está reproduciendo ruido. Su norma es $4\times10^{8}$ (la verdad tiene $\lVert x_{\mathrm{true}}\rVert\approx4.96$). El error crece exactamente $\times10$ cuando $\eta$ crece $\times10$ porque domina el término lineal $A^\dagger e$ y usamos la misma dirección $z$ para los tres niveles.
-2. **Cuidado con el residuo de la pseudoinversa completa (128 $\sigma_i$).** En teoría debería ser casi cero, pero el calculado vale $\approx\lVert e\rVert$. Con $\lVert x\rVert\approx3\times10^{12}$, el redondeo al calcular $Ax$ es del orden de $\varepsilon\,\lVert A\rVert\,\lVert x\rVert\approx7\times10^{-4}$, comparable con $\lVert e\rVert$. Ese residuo no es confiable.
-3. **La regularización reduce el error de $10^{8}$–$10^{10}$ a 9–12 %.** Las reconstrucciones (fig. 06) recuperan bien la zona suave y la posición del pulso, con oscilaciones cerca de sus bordes.
-4. **La discrepancia sobrerregulariza un poco.** Elige $\lambda$ mayores (y $k$ menores) que el oráculo: el residuo del oráculo está en $0.77$–$0.94\,\lVert e\rVert$, por debajo del umbral $1.1\,\lVert e\rVert$. El costo en error es pequeño (ver sección 4).
-5. **Tikhonov y TSVD dan resultados parecidos.** Coinciden en lo esencial porque los $\sigma_i$ caen muy rápido: el filtro suave y el corte abrupto descartan prácticamente las mismas direcciones (fig. 08).
+1. La pseudoinversa es inservible aunque ajuste los datos. Su residuo está entre $0.54$ y $0.69\,\lVert e\rVert$, es decir, *más pequeño que el propio ruido*: está reproduciendo ruido. Su norma es $4\times10^{8}$ (la verdad tiene $\lVert x_{\mathrm{true}}\rVert\approx4.96$). El error crece exactamente $\times10$ cuando $\eta$ crece $\times10$ porque domina el término lineal $A^\dagger e$ y usamos la misma dirección $z$ para los tres niveles.
+2. Cuidado con el residuo de la pseudoinversa completa (128 $\sigma_i$). En teoría debería ser casi cero, pero el calculado vale $\approx\lVert e\rVert$. Con $\lVert x\rVert\approx3\times10^{12}$, el redondeo al calcular $Ax$ es del orden de $\varepsilon\,\lVert A\rVert\,\lVert x\rVert\approx7\times10^{-4}$, comparable con $\lVert e\rVert$. Ese residuo no es confiable.
+3. La regularización reduce el error de $10^{8}$–$10^{10}$ a 9–12 %. Las reconstrucciones (fig. 06) recuperan bien la zona suave y la posición del pulso, con oscilaciones cerca de sus bordes.
+4. La discrepancia sobrerregulariza un poco. Elige $\lambda$ mayores (y $k$ menores) que el oráculo: el residuo del oráculo está en $0.77$–$0.94\,\lVert e\rVert$, por debajo del umbral $1.1\,\lVert e\rVert$. El costo en error es pequeño (ver sección 4).
+5. Tikhonov y TSVD dan resultados parecidos. Coinciden en lo esencial porque los $\sigma_i$ caen muy rápido: el filtro suave y el corte abrupto descartan prácticamente las mismas direcciones (fig. 08).
 
 ## 4. Robustez (50 semillas) y sensibilidad a $\delta$
 
@@ -55,13 +55,13 @@ Cociente error(discrepancia) / error(oráculo), de `resultados/tablas/03_robuste
 | todos | 0.5 | no viable en 50/50 semillas | $\sim10^{8}$–$10^{10}$ (no viable en 13/50) |
 
 - Con $\delta$ correcto, la mediana del error de la regla queda entre 0.5 % y 14 % por encima del oráculo, sin consultar la verdad.
-- **Subestimar el ruido es mucho peor que sobrestimarlo.** Con $\delta=0.5\lVert e\rVert$ el umbral $0.55\lVert e\rVert$ está por debajo del residuo mínimo de Tikhonov en la malla ($\approx0.70\lVert e\rVert$ en $\lambda/\sigma_1^2=10^{-10}$), así que la regla no encuentra $\lambda$ y lo informa. En la TSVD el umbral solo se alcanza con $k$ muy grandes, que reproducen ruido: error de $10^{8}$ veces el oráculo. Con $\delta=2\lVert e\rVert$ se sobrerregulariza, pero la mediana del error sube solo entre 6 % y 27 % sobre el oráculo (máximo 35 %).
+- Subestimar el ruido es mucho peor que sobrestimarlo. Con $\delta=0.5\lVert e\rVert$ el umbral $0.55\lVert e\rVert$ está por debajo del residuo mínimo de Tikhonov en la malla ($\approx0.70\lVert e\rVert$ en $\lambda/\sigma_1^2=10^{-10}$), así que la regla no encuentra $\lambda$ y lo informa. En la TSVD el umbral solo se alcanza con $k$ muy grandes, que reproducen ruido: error de $10^{8}$ veces el oráculo. Con $\delta=2\lVert e\rVert$ se sobrerregulariza, pero la mediana del error sube solo entre 6 % y 27 % sobre el oráculo (máximo 35 %).
 
 ## 5. ¿Por qué el error no baja de ≈9 % aunque el ruido sea muy pequeño?
 
-- En los tres niveles de ruido, entre el **96 % y el 99 %** del error cuadrático de Tikhonov (con $\lambda$ por discrepancia) se concentra en $t\in[0.55,0.8]$, alrededor del pulso, que es solo 32 de los 128 puntos.
+- En los tres niveles de ruido, entre el 96 % y el 99 % del error cuadrático de Tikhonov (con $\lambda$ por discrepancia) se concentra en $t\in[0.55,0.8]$, alrededor del pulso, que es solo 32 de los 128 puntos.
 - Separando $x_\lambda-x_{\mathrm{true}}$ en sesgo y ruido propagado (sección 7.2 del desarrollo), para $\eta=10^{-3}$ el sesgo aporta $\approx0.108$ del error relativo y el ruido solo $\approx0.007$.
-- **Sin ruido** ($e=0$, tabla 03), el mejor error posible es 5.4 % (TSVD, $k=91$) y 7.8 % (Tikhonov en el extremo inferior de la malla). Las discontinuidades del pulso necesitan componentes $v_i$ de alta frecuencia cuyos $\sigma_i$ están por debajo de la precisión de máquina: esa información no está en los datos de forma utilizable. Es el límite que el artículo anticipa: la regularización no recupera lo que la observación destruyó.
+- Sin ruido ($e=0$, tabla 03), el mejor error posible es 5.4 % (TSVD, $k=91$) y 7.8 % (Tikhonov en el extremo inferior de la malla). Las discontinuidades del pulso necesitan componentes $v_i$ de alta frecuencia cuyos $\sigma_i$ están por debajo de la precisión de máquina: esa información no está en los datos de forma utilizable. Es el límite que el artículo anticipa: la regularización no recupera lo que la observación destruyó.
 
 ## 6. Exploración: más suavizado, menos información
 
