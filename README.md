@@ -1,12 +1,12 @@
 # Reconstrucción de señales con ruido: pseudoinversa, SVD truncada y Tikhonov
 
 **Curso:** Álgebra Lineal Aplicada 2026-2 — Universidad del Pacífico
-**Tema asignado:** Reconstrucción de señales con ruido (pseudoinversa, valores singulares y regularización de Tikhonov)
-**Versión:** entrega parcial — etiqueta `avance-parcial`
 
-**Integrantes:** Integrante A · Integrante B · Integrante C · Integrante D *(reemplazar por nombres reales)*
+**Tema asignado:** Reconstrucción de señales con ruido (Pseudoinversa, SVD truncada y regularización de Tikhonov. Incluye selección del parámetro y experimento reproducible.)
 
----
+**Versión:** Entrega Parcial — etiqueta `avance-parcial`
+
+**Integrantes:** Paula Romero, Carlos Ledo y Matías Desmonteix
 
 ## Problema
 
@@ -23,7 +23,7 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 
 | Qué se entrega | Dónde |
 |---|---|
-| Problema, objetivo y alcance actualizados | `docs/desarrollo_matematico.md` §1 |
+| Problema, objetivo y alcance actualizados | `docs/desarrollo_matematico.md` (sección 1) |
 | Desarrollo matemático con demostraciones | `docs/desarrollo_matematico.md` |
 | Implementación | `reconstruccion/` (paquete) y `scripts/` |
 | Resultados preliminares, comprobaciones e interpretación | `docs/resultados_preliminares.md`, `resultados/` |
@@ -31,9 +31,6 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 | Guion del video | `docs/guion_video.md` |
 | Responsabilidades, contribuciones, pendientes y cronograma | `docs/organizacion.md` |
 | Declaración de uso de IA | `DECLARACION_IA.md` |
-
-Completado: todos los pasos del experimento obligatorio (sección 9 del artículo), más robustez con 50 semillas y una exploración de $s$.
-Pendiente: ampliación (penalización de diferencias o curva L/GCV), video y versión final. Detalle en `docs/organizacion.md`.
 
 ## Resultados principales (semilla 2026)
 
@@ -43,7 +40,7 @@ Pendiente: ampliación (penalización de diferencias o curva L/GCV), video y ver
 | $10^{-3}$ | $8.1\times10^{8}$ | 0.114 ($k=31$) | 0.109 | 0.101 |
 | $10^{-2}$ | $8.1\times10^{9}$ | 0.122 ($k=23$) | 0.119 | 0.119 |
 
-*(error relativo $\lVert x-x_{\mathrm{true}}\rVert/\lVert x_{\mathrm{true}}\rVert$)*
+(error relativo $\lVert x-x_{\mathrm{true}}\rVert/\lVert x_{\mathrm{true}}\rVert$)
 
 - La pseudoinversa ajusta los datos por debajo del nivel del ruido y aun así se equivoca por un factor de $10^{8}$ o más.
 - Con regularización el error baja a 9–12 %. En 50 semillas, la discrepancia queda en mediana entre 0.5 % y 14 % por encima del oráculo.
