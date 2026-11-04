@@ -1,7 +1,5 @@
 # Organización del trabajo
 
-Pendiente antes de entregar: poner las fechas oficiales de Blackboard y comprobar que el registro de contribuciones coincide con lo que cada uno hizo de verdad. La rúbrica valora el contenido del aporte y la capacidad de explicarlo, no el número de commits.
-
 ## 1. Integrantes y responsabilidades
 
 | Integrante | Responsabilidad principal | Archivos a su cargo | Bloque del video |
@@ -57,5 +55,5 @@ Las fechas son referenciales y hay que ajustarlas a las publicadas en Blackboard
 | 1 | 9-15 nov 2026 | Retroalimentación de la parcial; elegir y empezar la ampliación | Todos, y Carlos y Matias con la ampliación |
 | 2 | 16-22 nov 2026 | Terminar la ampliación con sus pruebas; estimación de $\delta$; actualizar resultados y documentos | Carlos, Matias y Paula |
 | 3 | 23-29 nov 2026 | Diapositivas, guion definitivo, ensayo cronometrado y grabación | Todos |
-| 4 | 30 nov-6 dic 2026 | Edición del video (Matias); revisión de reproducibilidad desde cero (Carlos); README final y etiqueta `entrega-final` (Paula) | Los tres |
+| 4 | 30 nov-6 dic 2026 | Edición del video (Matias); revisión de reproducibilidad desde cero (Carlos); README final y etiqueta `entrega-final` (Paula) | Todos |
 | Final | Según Blackboard | Ronda de preguntas individual | Todos |
