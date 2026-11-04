@@ -30,9 +30,9 @@ Cada uno habla alrededor de 3 minutos de contenido técnico. Todos tenemos que p
 | Contraste fórmula espectral vs. sistema aumentado con QR | Completo |
 | Robustez con 50 semillas y sensibilidad a $\delta$ | Preliminar |
 | Variación del suavizado $s$ | Exploratorio |
-| Curva L | Parcial, solo gráfico, sin selección por esquina |
+| Curva L | Parcial, solo gráfico |
 | Ampliación (penalización $\lVert Lx\rVert^2$ o GCV) | Pendiente |
-| Video | Pendiente, guion preliminar listo |
+| Video | Pendiente |
 
 ## 4. Actividades pendientes
 
