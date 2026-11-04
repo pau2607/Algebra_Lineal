@@ -4,7 +4,7 @@
 
 **Tema asignado:** Reconstrucción de señales con ruido (Pseudoinversa, SVD truncada y regularización de Tikhonov. Incluye selección del parámetro y experimento reproducible.)
 
-**Versión:** Entrega Parcial — etiqueta `avance-parcial`
+**Versión:** Entrega Parcial 
 
 **Integrantes:** Paula Romero, Carlos Ledo y Matías Desmonteix
 
