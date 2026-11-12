@@ -2,7 +2,7 @@
 
 **Proyecto:** Reconstrucción de señales con ruido pseudoinversa, valores singulares y regularización de Tikhonov
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
-**Estado:** entrega parcial
+**Estado:** entrega parcial + ejemplos prácticos (imagen y audio) agregados después de la retroalimentación
 
 Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2. En Tikhonov, $\lambda$ es directamente el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
 
@@ -41,6 +41,8 @@ $$
 
 Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2$, SVD calculada con NumPy (no se programa desde cero), principio de discrepancia y curva L solo como gráfico exploratorio.
 
+Después de la entrega parcial, y siguiendo la retroalimentación del docente, agregamos dos ejemplos prácticos con el mismo método (sección 9): una imagen de $256\times256$ desenfocada (fotografía y texto) y un audio de 2 s con los agudos apagados. Se pueden ver y escuchar en `resultados/imagen/` y `resultados/audio/`.
+
 ## 2. Conceptos del curso que se utilizan
 
 | Concepto | Dónde aparece en el proyecto |
@@ -51,6 +53,8 @@ Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2
 | Formas cuadráticas definidas positivas | Unicidad de la solución de Tikhonov |
 | SVD y pseudoinversa | Fórmulas de las tres reconstrucciones, filtrado espectral |
 | Número de condición | Amplificación del ruido |
+| Producto de Kronecker y vectorización | Desenfoque de imágenes como $b=Ax+e$; SVD de $A_h\otimes A_v$ (sección 9.1) |
+| Números complejos, producto interno complejo y Fourier | Las matrices circulantes se diagonalizan con la DFT; filtrado del audio por frecuencias (sección 9.2) |
 
 ## 3. Mínimos cuadrados y pseudoinversa
 
@@ -234,6 +238,88 @@ En este experimento tomamos $\delta=\lVert e\rVert$ (conocido porque generamos e
 
 Dibujamos $\log\lVert Ax_\lambda-b\rVert$ frente a $\log\lVert x_\lambda\rVert$. Su esquina es una heurística de compromiso; en esta entrega solo se grafica, no se usa para elegir.
 
+## 9. Ejemplos prácticos: una imagen y un sonido
+
+Incorporamos la retroalimentación del docente a la entrega parcial: mostrar la reconstrucción sobre datos que se puedan *ver* y *escuchar*. No cambiamos de método: usamos las mismas reconstrucciones y la misma regla de discrepancia de las secciones 3 a 8 (en la imagen, las tres: pseudoinversa, SVD truncada y Tikhonov; en el audio, la pseudoinversa completa y Tikhonov). Lo nuevo es cómo obtener la SVD cuando la matriz es demasiado grande para formarla. Usamos un suavizado con el mismo ancho del experimento principal ($0.03\times127\approx3.8$ píxeles o muestras), así que la "dificultad" del operador es comparable.
+
+### 9.1 Imagen: desenfoque separable y producto de Kronecker
+
+Una imagen en escala de grises es una matriz $X\in\mathbb R^{n\times n}$ ($n=256$, valores en $[0,1]$). Desenfocamos cada columna con $A_v$ (dirección vertical) y cada fila con $A_h$ (horizontal), ambas construidas con `datos.matriz_suavizado`:
+
+$$
+B=A_vXA_h^T+E .
+$$
+
+**Vectorización.** Si $\operatorname{vec}(X)\in\mathbb R^{n^2}$ apila las columnas de $X$, entonces
+
+$$
+\operatorname{vec}(A_vXA_h^T)=(A_h\otimes A_v)\operatorname{vec}(X),
+$$
+
+porque la columna $j$ de $A_vXA_h^T$ es $\sum_\ell (A_h)_{j\ell}\,A_vx_\ell$, y el bloque $(j,\ell)$ de $A_h\otimes A_v$ es justamente $(A_h)_{j\ell}A_v$. Así, la imagen es un caso del problema $b=Ax+e$ con $A=A_h\otimes A_v\in\mathbb R^{65\,536\times65\,536}$. Esa matriz ocuparía unos 34 GB en doble precisión, y su SVD directa sería inviable.
+
+**Proposición 3 (SVD de un producto de Kronecker).** Si $A_v=U_v\Sigma_vV_v^T$ y $A_h=U_h\Sigma_hV_h^T$ son SVD, entonces
+
+$$
+A_h\otimes A_v=(U_h\otimes U_v)\,(\Sigma_h\otimes\Sigma_v)\,(V_h\otimes V_v)^T
+$$
+
+es una SVD (salvo el orden de los valores singulares), y los valores singulares de $A_h\otimes A_v$ son los productos $S_{ij}=\sigma_i(A_v)\,\sigma_j(A_h)$.
+
+*Demostración.* Por la propiedad del producto mixto $(P\otimes Q)(R\otimes T)=PR\otimes QT$,
+
+$$
+(U_h\otimes U_v)(\Sigma_h\otimes\Sigma_v)(V_h^T\otimes V_v^T)=U_h\Sigma_hV_h^T\otimes U_v\Sigma_vV_v^T=A_h\otimes A_v .
+$$
+
+Además, $(U_h\otimes U_v)^T(U_h\otimes U_v)=U_h^TU_h\otimes U_v^TU_v=I\otimes I=I$, y lo mismo para $V_h\otimes V_v$, así que ambas son ortogonales. $\Sigma_h\otimes\Sigma_v$ es diagonal con entradas $\sigma_j(A_h)\sigma_i(A_v)\ge0$. Reordenando las columnas se obtienen los valores singulares en orden decreciente. $\square$
+
+El par de vectores singulares asociado a $S_{ij}$ es $u^h_j\otimes u^v_i$ y $v^h_j\otimes v^v_i$, que como imágenes son las matrices de rango uno $u^v_i(u^h_j)^T$ y $v^v_i(v^h_j)^T$. El coeficiente de Picard es
+
+$$
+(u^h_j\otimes u^v_i)^T\operatorname{vec}(B)=(u^v_i)^TB\,u^h_j=C_{ij},\qquad C=U_v^TBU_h .
+$$
+
+**Consecuencia.** Las fórmulas de las secciones 3, 5 y 6 se aplican entrada por entrada sobre la matriz $C$ ($\circ$ es el producto entrada por entrada):
+
+$$
+X^\dagger=V_v\big(C\oslash S\big)V_h^T,\qquad
+X_k=V_v\big(M_k\circ C\oslash S\big)V_h^T,\qquad
+X_\lambda=V_v\Big(\frac{S}{S^{\circ2}+\lambda}\circ C\Big)V_h^T ,
+$$
+
+donde $M_k$ es la máscara de los $k$ valores $S_{ij}$ más grandes. Solo se calculan dos SVD de $256\times256$ y productos de matrices de $256\times256$. Como $U_v$ y $U_h$ son cuadradas, el residuo de Tikhonov es $\lVert(\lambda/(S^{\circ2}+\lambda))\circ C\rVert_F$, que es la sección 6.2 escrita en forma matricial. Por eso la discrepancia sigue bien definida.
+
+**Por qué la imagen es más difícil.** $\kappa_2(A_h\otimes A_v)=\kappa_2(A_h)\,\kappa_2(A_v)$: el condicionamiento *se eleva al cuadrado* al pasar a dos dimensiones. Los $S_{ij}$ calculados llegan a $\sim10^{-34}$. El umbral por defecto de `pinv`, $\max(m,n)\,\varepsilon\,S_{\max}$ con $m=n=65\,536$, conserva 18 817 de las 65 536 direcciones, y aun así la reconstrucción es ruido puro (sección 7 de los resultados).
+
+**Comprobación.** `tests/test_aplicaciones.py` forma $A_h\otimes A_v$ explícitamente para un caso $9\times7$ y verifica que los valores singulares son los productos, y que pinv, SVD truncada y Tikhonov en forma matricial coinciden con `metodos.py` aplicado a la matriz grande y con el sistema aumentado (QR).
+
+### 9.2 Sonido: suavizado circular y transformada de Fourier
+
+Un audio de 2.048 s a 8000 muestras por segundo es un vector $x\in\mathbb R^{N}$ con $N=16\,384$. Tampoco formamos $A$ ($N\times N$).
+
+**Primer intento descartado.** Reutilizar la misma $A$ de $128\times128$ por bloques de 128 muestras (16 ms) es exactamente el problema 1D aplicado a cada columna. Es el caso $A_h=I$ de la sección 9.1, y lo comprueba `test_audio_por_bloques_es_el_caso_1d_columna_a_columna`. Pero como modelo de observación es malo: al suavizar cada bloque por separado aparecen saltos de hasta $0.58$ entre muestras vecinas en los bordes de los bloques (con el suavizado continuo, a lo sumo $0.06$), 62.5 veces por segundo, y el audio "observado" se oiría con un zumbido que un suavizado real no produce. El resultado se aparta hasta $0.26$ del suavizado continuo, un 14 % en norma. Por eso usamos un suavizado continuo sobre toda la señal.
+
+**Modelo.** $Ax=h\circledast x$, convolución circular con el núcleo gaussiano $h_j=\exp(-d_j^2/2\sigma^2)/\sum_\ell\exp(-d_\ell^2/2\sigma^2)$, $d_j=\min(j,N-j)$, $\sigma=3.81$ muestras. Como $h$ suma 1, se conservan las constantes, igual que en las filas de la $A$ del experimento principal. $A$ es una matriz *circulante*: cada fila es la anterior desplazada un lugar.
+
+**Proposición 4 (las circulantes se diagonalizan con Fourier).** Sea $F$ la matriz de la transformada discreta de Fourier, $F_{k\ell}=\omega^{k\ell}$ con $\omega=e^{-2\pi\mathrm i/N}$, y $\hat h=Fh$. Entonces $A=F^{-1}\operatorname{diag}(\hat h)\,F$. Si además $h$ es simétrico ($h_j=h_{N-j}$), $\hat h$ es real y los valores singulares de $A$ son $|\hat h_k|$.
+
+*Demostración.* La columna $\ell$ de $F^{-1}$ es $f_\ell=\frac1N(\omega^{-k\ell})_k$, una oscilación pura. Al convolucionar $h$ con una oscilación pura se obtiene la misma oscilación multiplicada por $\hat h_\ell$, así que $Af_\ell=\hat h_\ell f_\ell$: las columnas de $F^{-1}$ son vectores propios. Con $\tilde F=F/\sqrt N$ unitaria ($\tilde F^*\tilde F=I$, producto interno complejo de la Unidad 2 del curso) se tiene $A=\tilde F^*\operatorname{diag}(\hat h)\tilde F$. Si $h$ es real y simétrico, $\hat h_k=\sum_jh_j\cos(2\pi jk/N)\in\mathbb R$. Escribiendo $\hat h_k=|\hat h_k|\operatorname{signo}(\hat h_k)$ y absorbiendo el signo en uno de los factores unitarios, se obtiene una SVD con valores singulares $|\hat h_k|$. $\square$
+
+Con esto, la fórmula de Tikhonov (Teorema 2, válido también con $A^*$ en lugar de $A^T$) queda, frecuencia por frecuencia,
+
+$$
+\hat x_{\lambda,k}=\frac{\hat h_k}{\hat h_k^2+\lambda}\,\hat b_k,\qquad f_k(\lambda)=\frac{\hat h_k^2}{\hat h_k^2+\lambda},
+$$
+
+y el residuo también se puede calcular en frecuencia gracias a la identidad de Parseval, $\lVert r\rVert=\lVert\hat r\rVert/\sqrt N$ (el código lo calcula en el tiempo, que da lo mismo). Todo cuesta $O(N\log N)$ con la FFT.
+
+**Interpretación en sonido.** El índice $k$ corresponde a la frecuencia $kf_s/N$ Hz. Analíticamente $\hat h(f)\approx\exp\!\big(-\tfrac12(2\pi f\sigma/f_s)^2\big)$: vale $1$ en los graves, $10^{-2}$ hacia los 1000 Hz y $\sim10^{-31}$ a 4000 Hz. Suavizar es "apagar" los agudos, como oír a través de una pared. Para Tikhonov, $f_k(\lambda)$ funciona como un ecualizador: devuelve los agudos hasta donde $\hat h_k^2\gg\lambda$, es decir, mientras la señal sobresale del ruido, y luego los corta. La pseudoinversa divide entre $\hat h_k\approx10^{-31}$ (en la práctica, entre redondeo: 901 de los $\hat h_k$ calculados son exactamente $0$ y 2757 son negativos). Es la misma meseta de redondeo de la sección 5.1.
+
+**Comprobación.** `tests/test_aplicaciones.py` forma la circulante con `scipy.linalg.circulant` para $N=48$ y verifica que los valores singulares son $|\hat h_k|$ y que Tikhonov por Fourier coincide con la SVD y con el sistema aumentado (QR).
+
+**Limitación del modelo.** La convolución circular "pega" el final del audio con su inicio. Afecta solo a unas $3\sigma\approx11$ muestras (1.5 ms) en cada extremo y no se nota al escuchar. Un modelo sin esta periodicidad necesitaría una matriz de Toeplitz y otra forma de calcular la SVD.
+
 ## Referencias
 
 [1] O. Velásquez Castañón, "Reconstrucción de señales con ruido: pseudoinversa, valores singulares y regularización de Tikhonov," material de referencia para proyectos, Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico, oct. 2026.
@@ -251,3 +337,9 @@ Dibujamos $\log\lVert Ax_\lambda-b\rVert$ frente a $\log\lVert x_\lambda\rVert$.
 [7] V. A. Morozov, "On the solution of functional equations by the method of regularization," *Soviet Mathematics Doklady*, vol. 7, pp. 414–417, 1966.
 
 [8] G. H. Golub y C. F. Van Loan, *Matrix Computations*, 4.ª ed. Baltimore, MD, USA: Johns Hopkins University Press, 2013.
+
+[9] P. C. Hansen, J. G. Nagy y D. P. O'Leary, *Deblurring Images: Matrices, Spectra, and Filtering*. Philadelphia, PA, USA: SIAM, 2006, doi: 10.1137/1.9780898718874.
+
+[10] C. F. Van Loan, "The ubiquitous Kronecker product," *Journal of Computational and Applied Mathematics*, vol. 123, no. 1–2, pp. 85–100, 2000, doi: 10.1016/S0377-0427(00)00393-9.
+
+[11] S. van der Walt *et al.*, "scikit-image: image processing in Python," *PeerJ*, vol. 2, e453, 2014, doi: 10.7717/peerj.453. (Fuente de la fotografía de prueba `chelsea`, de S. van der Walt, publicada con licencia CC0.)

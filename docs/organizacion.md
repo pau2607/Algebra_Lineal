@@ -31,12 +31,16 @@ Cada uno habla alrededor de 3 minutos de contenido técnico. Todos tenemos que p
 | Robustez con 50 semillas y sensibilidad a $\delta$ | Preliminar |
 | Variación del suavizado $s$ | Exploratorio |
 | Curva L | Parcial, solo gráfico |
+| Ejemplo práctico de imagen (separable, Kronecker) con pruebas | Completo (falta revisión del grupo) |
+| Ejemplo práctico de audio (circulante, Fourier) con pruebas | Completo (falta revisión del grupo) |
 | Ampliación (penalización $\lVert Lx\rVert^2$ o GCV) | Pendiente |
 | Video | Pendiente |
 
 ## 4. Actividades pendientes
 
-1. Incorporar la retroalimentación del docente a esta entrega (todos).
+1. Incorporar la retroalimentación del docente a esta entrega (todos). **Hecho en parte:** se agregó el ejemplo práctico de imagen y audio que pidió el docente (desarrollo §9, resultados §7, `scripts/05_imagen.py`, `scripts/06_audio.py`, `tests/test_aplicaciones.py`). Falta que los tres lo revisen y que cada uno pueda explicar la Proposición 3 (Kronecker) y la Proposición 4 (circulantes y Fourier).
+1b. Opcional para el video: correr los ejemplos con una foto o grabación propia (`--imagen`, `--audio`) y elegir cuál mostrar.
+1c. Repetir el estudio de robustez (varias semillas) para la imagen, si el tiempo alcanza.
 2. Ampliación elegida por el grupo (una de las dos):
    - penalización $\lambda\lVert Lx\rVert^2$ con $L$ de primeras diferencias, comprobando $\ker A\cap\ker L=\{0\}$ (la lidera Carlos);
    - selección por curva L (esquina por máxima curvatura) o validación cruzada generalizada, comparada con la discrepancia (la lidera Matias).
@@ -44,7 +48,7 @@ Cada uno habla alrededor de 3 minutos de contenido técnico. Todos tenemos que p
 4. Estudiar una estimación de $\delta$ a partir de los datos (por ejemplo, con los coeficientes de Picard planos) en lugar de usar $\lVert e\rVert$ exacto (Paula).
 5. Preparar las diapositivas de su propio bloque, ensayar con cronómetro, grabar y editar el video (9 a 11 min). La edición la hace Matias.
 6. Completar el README final (Paula), el registro de contribuciones y la declaración de IA (todos), y poner la etiqueta `entrega-final` (Paula).
-7. Preparación individual de la ronda de preguntas: cada uno repasa las seis preguntas de defensa (§9 del desarrollo) y un ejemplo de variación (cambiar $s$, $\eta$, $\tau$ o $\delta$).
+7. Preparación individual de la ronda de preguntas: cada uno repasa las preguntas de defensa (por redactar en el desarrollo; la §9 ahora es el ejemplo práctico) y un ejemplo de variación (cambiar $s$, $\eta$, $\tau$ o $\delta$).
 
 ## 5. Cronograma hasta la entrega final
 

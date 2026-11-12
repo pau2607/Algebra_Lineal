@@ -4,7 +4,7 @@
 
 **Tema asignado:** Reconstrucción de señales con ruido (Pseudoinversa, SVD truncada y regularización de Tikhonov. Incluye selección del parámetro y experimento reproducible.)
 
-**Versión:** Entrega Parcial 
+**Versión:** Entrega parcial + ejemplos prácticos de imagen y audio (en desarrollo hacia la entrega final)
 
 **Integrantes:** Paula Romero, Carlos Ledo y Matías Desmonteix
 
@@ -18,6 +18,7 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 2. Comparar pseudoinversa numérica, SVD truncada y Tikhonov con error relativo, residuo y norma para los tres niveles de ruido.
 3. Elegir el parámetro con el principio de discrepancia (sin $x_{\mathrm{true}}$) y cuantificar su distancia al mejor valor posible (oráculo).
 4. Explicar con la SVD qué parte del error se debe al ruido y qué parte es información perdida.
+5. Llevar el mismo método a datos que se puedan ver y oír: una imagen desenfocada y un sonido apagado (retroalimentación de la entrega parcial).
 
 ## Estado de la entrega parcial
 
@@ -27,7 +28,8 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 | Desarrollo matemático con demostraciones | `docs/desarrollo_matematico.md` |
 | Implementación | `reconstruccion/` (paquete) y `scripts/` |
 | Resultados preliminares, comprobaciones e interpretación | `docs/resultados_preliminares.md`, `resultados/` |
-| Pruebas automáticas (23) | `tests/test_reconstruccion.py` |
+| Pruebas automáticas (45) | `tests/test_reconstruccion.py` (23), `tests/test_aplicaciones.py` (22) |
+| **Nuevo:** ejemplos prácticos de imagen y audio | `docs/desarrollo_matematico.md` §9, `docs/resultados_preliminares.md` §7, `resultados/imagen/`, `resultados/audio/` |
 | Guion del video | `docs/guion_video.md` |
 | Responsabilidades, contribuciones, pendientes y cronograma | `docs/organizacion.md` |
 | Declaración de uso de IA | `DECLARACION_IA.md` |
@@ -49,6 +51,23 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 
 ![Reconstrucciones](resultados/figuras/06_reconstrucciones.png)
 
+## Ejemplo práctico: imagen y sonido
+
+Después de la entrega parcial aplicamos las mismas reconstrucciones (en la imagen las tres; en el audio, pseudoinversa y Tikhonov), con el parámetro elegido por discrepancia, a una **imagen de 256 × 256 desenfocada** y a un **audio de 2 s con los agudos apagados**. En ambos casos el suavizado tiene el mismo ancho que el experimento principal (≈ 3.8 píxeles o muestras).
+
+![Imagen de texto desenfocada y reconstruida](resultados/figuras/11_imagen_texto.png)
+
+| Ejemplo | Observado | Pseudoinversa | Tikhonov · discrepancia |
+|---|---|---|---|
+| Foto (gato), $\eta=10^{-2}$ | 22.3 dB | ruido puro (pinv numérica: error $5\times10^{7}$) | **25.6 dB** |
+| Texto, $\eta=10^{-3}$ | 16.6 dB | ruido puro | **20.1 dB**, vuelve a leerse |
+| Audio, $\eta=10^{-2}$ | SNR 4.6 dB | ruido blanco (pinv completa: error $2\times10^{14}$) | **SNR 9.7 dB**, recupera los armónicos hasta ≈ 1 kHz |
+
+- **Imagen:** el desenfoque es $B=A X A^T+E$. Su matriz $A\otimes A$ sería de 65 536 × 65 536 (≈ 34 GB), pero su SVD sale de la SVD de $A$ (producto de Kronecker), así que no se forma.
+- **Audio:** el suavizado es una convolución circular; su SVD la da la transformada de Fourier, y Tikhonov actúa como un ecualizador que devuelve los agudos mientras sobresalen del ruido.
+- **Para escuchar:** `resultados/audio/melodia_original.wav`, `melodia_observado_eta1e-2.wav` y `melodia_tikhonov_eta1e-2.wav`.
+- **Con una foto o grabación propia:** `python scripts/05_imagen.py --imagen foto.jpg` y `python scripts/06_audio.py --audio voz.wav`.
+
 ## Organización del repositorio
 
 ```
@@ -60,15 +79,22 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 │   ├── datos.py               #   señal, matriz de suavizado, ruido con semilla
 │   ├── metodos.py             #   SVD, pinv, SVD truncada, Tikhonov (espectral, aumentado QR, normales)
 │   ├── seleccion.py           #   discrepancia (sin x_true) y oráculo (con x_true)
-│   └── metricas.py            #   error relativo, residuo, norma
+│   ├── metricas.py            #   error relativo, residuo, norma
+│   ├── separable.py           #   imagen: B = A_v X A_h^T, SVD de Kronecker, TSVD y Tikhonov matriciales
+│   └── circulante.py          #   audio: convolución circular, SVD vía Fourier
 ├── scripts/
 │   ├── comun.py               # parámetros del experimento y estilo de figuras
 │   ├── 01_ejemplo_diagonal.py
 │   ├── 02_experimento_principal.py
 │   ├── 03_robustez.py         # 50 semillas, sensibilidad a delta, caso sin ruido
 │   ├── 04_variacion_s.py      # exploración: s = 0.02, 0.03, 0.05
+│   ├── 05_imagen.py           # ejemplo práctico: gato y texto desenfocados (--imagen para una foto propia)
+│   ├── 06_audio.py            # ejemplo práctico: melodía apagada (--audio para un .wav propio)
 │   └── ejecutar_todo.py
-├── tests/test_reconstruccion.py
+├── recursos/gato_256.png     # foto de prueba (scikit-image, CC0)
+├── tests/
+│   ├── test_reconstruccion.py
+│   └── test_aplicaciones.py   # imagen y audio contra las matrices grandes formadas en casos pequeños
 ├── docs/
 │   ├── desarrollo_matematico.md
 │   ├── resultados_preliminares.md
@@ -77,7 +103,9 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 └── resultados/                # generado por los scripts
     ├── configuracion.json     # semilla, tolerancias, sigma_i, versiones
     ├── figuras/*.png
-    └── tablas/*.csv, *.md
+    ├── tablas/*.csv, *.md
+    ├── imagen/*.png           # imágenes sueltas para las diapositivas
+    └── audio/*.wav            # original, observado y reconstruido
 ```
 
 ## Cómo ejecutar
@@ -86,8 +114,8 @@ Requiere Python ≥ 3.10.
 
 ```bash
 pip install -r requirements.txt
-python scripts/ejecutar_todo.py   # regenera resultados/ (≈ 6 s)
-python -m pytest -q               # 23 pruebas
+python scripts/ejecutar_todo.py   # regenera resultados/ (≈ 20 s)
+python -m pytest -q               # 45 pruebas
 ```
 
 ### Parámetros registrados
@@ -124,3 +152,9 @@ Detalle completo (valores singulares, versiones) en `resultados/configuracion.js
 [7] V. A. Morozov, "On the solution of functional equations by the method of regularization," *Soviet Mathematics Doklady*, vol. 7, pp. 414–417, 1966.
 
 [8] G. H. Golub y C. F. Van Loan, *Matrix Computations*, 4.ª ed. Baltimore, MD, USA: Johns Hopkins University Press, 2013.
+
+[9] P. C. Hansen, J. G. Nagy y D. P. O'Leary, *Deblurring Images: Matrices, Spectra, and Filtering*. Philadelphia, PA, USA: SIAM, 2006, doi: 10.1137/1.9780898718874.
+
+[10] C. F. Van Loan, "The ubiquitous Kronecker product," *Journal of Computational and Applied Mathematics*, vol. 123, no. 1–2, pp. 85–100, 2000, doi: 10.1016/S0377-0427(00)00393-9.
+
+[11] S. van der Walt *et al.*, "scikit-image: image processing in Python," *PeerJ*, vol. 2, e453, 2014, doi: 10.7717/peerj.453. (Fuente de la foto de prueba, CC0.)
