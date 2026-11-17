@@ -168,7 +168,7 @@ Interpretación (figura 14):
 
 Tablas `08_gsvd`, `08_penalizaciones` y `08_robustez_penalizaciones`; figuras 15 a 17. Método en la sección 10 del desarrollo. Tres penalizaciones, $L=I$ (Tikhonov clásico), $L_1$ (primeras diferencias) y $L_2$ (segundas), sobre dos señales: la del experimento (gaussiana + pulso) y una suave, $x(t)=0.5+0.4\sin(2\pi t)+0.2t$. Malla absoluta de $\lambda$ en $[10^{-14},10^{4}]$; $\lambda$ por discrepancia con $\delta=\lVert e\rVert$.
 
-Comprobaciones previas: $\ker A\cap\ker L=\{0\}$ para $L_1$ y $L_2$ (dimensiones de $\ker L$: 1 y 2); la GSVD calculada reconstruye $A$ con error $\le1.3\times10^{-14}$ y la fórmula espectral generalizada coincide con el sistema aumentado (QR) hasta $7\times10^{-8}$.
+Comprobaciones previas: $\ker A\cap\ker L=\{0\}$ para $L_1$ y $L_2$ (dimensiones de $\ker L$: 1 y 2); la GSVD calculada reconstruye $A$ con error $\le1.4\times10^{-14}$ y la fórmula espectral generalizada coincide con el sistema aumentado (QR) hasta $7\times10^{-8}$ relativo (ese máximo ocurre en $\lambda=10^{-14}$; para $\lambda\ge10^{-8}$ la diferencia es $\le3\times10^{-11}$).
 
 Mediana del error relativo en 50 semillas (discrepancia / oráculo):
 
@@ -183,13 +183,13 @@ Mediana del error relativo en 50 semillas (discrepancia / oráculo):
 
 Interpretación:
 
-1. Para el pulso, la penalización no cambia nada. El oráculo da el mismo error con las tres (diferencias menores del 0.5 %) y la discrepancia, errores dentro del 5 % entre sí, con $L=I$ ligeramente mejor. En la figura 15 (arriba a la derecha) las tres reconstrucciones se superponen punto a punto.
-2. La razón está en los factores de filtro (figura 17): en el $\lambda$ elegido, las tres penalizaciones dejan pasar las mismas $\approx30$ direcciones generalizadas ($f_i>0.5$ para 31, 30 y 29 direcciones). El corte lo impone la caída de los valores singulares de $A$ frente al ruido; la penalización solo cambia la forma de la transición. Un salto no es "simple" para ninguna penalización cuadrática.
+1. Para el pulso, la penalización no cambia nada. El oráculo da el mismo error con las tres (diferencias menores del 0.5 %) y la discrepancia, errores que difieren en $\approx5\,\%$ como máximo, con $L=I$ ligeramente mejor. En la figura 15 (arriba a la derecha) las tres reconstrucciones se superponen punto a punto.
+2. La razón está en los factores de filtro (figura 17): en el $\lambda$ elegido, las tres penalizaciones dejan pasar las mismas $\approx30$ direcciones generalizadas ($f_i>0.5$ para 31, 30 y 29 direcciones; grados de libertad efectivos $\sum_if_i=31.1$, $29.5$ y $29.0$, una medida que no depende de la base). El corte lo impone la caída de los valores singulares de $A$ frente al ruido; la penalización solo cambia la forma de la transición. Un salto no es "simple" para ninguna penalización cuadrática.
 3. Para la señal suave, la penalización lo cambia todo. Con $\eta=10^{-3}$ el error baja de $0.95\,\%$ ($L=I$) a $0.47\,\%$ ($L_1$) y $0.09\,\%$ ($L_2$): diez veces. En la figura 15 (abajo a la derecha) el error punto a punto de $L=I$ oscila alrededor de $5\times10^{-3}$ y el de $L_2$ alrededor de $3\times10^{-4}$. La penalización $\lVert x\rVert^2$ empuja hacia cero una señal que no es pequeña (vale entre 0.25 y 0.95); $\lVert L_2x\rVert^2$ solo castiga la curvatura, que esta señal casi no tiene.
-4. Los $\lambda$ elegidos son muy distintos ($10^{-4}$ para $I$, $10^{-2}$ para $L_1$, $10^{2}$ para $L_2$ con la señal suave): cada penalización tiene su propia escala, porque $\lVert Lx\rVert$ y $\lVert x\rVert$ miden cosas distintas. La discrepancia lo resuelve sola, porque mira el residuo y no $\lambda$.
-5. Con $\lambda\to\infty$ y $L_1$, la reconstrucción tiende a la constante $\operatorname{media}(b)$, y con $L=I$, a cero (figura 16, extremo derecho): el error de $L=I$ se va a $1$, el de $L_1$ a $0.7$ (pulso).
+4. Los $\lambda$ elegidos son muy distintos (con la señal suave y $\eta=10^{-3}$: $4.6\times10^{-4}$ para $I$, $6.8\times10^{-2}$ para $L_1$ y $68$ para $L_2$, seis órdenes de magnitud entre el primero y el último): cada penalización tiene su propia escala, porque $\lVert Lx\rVert$ y $\lVert x\rVert$ miden cosas distintas. La discrepancia lo resuelve sola, porque mira el residuo y no $\lambda$.
+5. Con $\lambda\to\infty$ y $L_1$, la reconstrucción tiende a la constante $\operatorname{media}(b)$, y con $L=I$, a cero (figura 16, extremo derecho): el error de $L=I$ se va a $1$, el de $L_1$ a $\approx0.75$ (pulso).
 
-Conclusión: la penalización es un modelo a priori de la señal; ayuda cuando describe lo que la señal es y no cuando no. El límite del pulso no está en el método sino en lo que la observación dejó en los datos. Para recuperar bordes haría falta una penalización no cuadrática (variación total), que sale del álgebra lineal.
+Conclusión: la penalización es un modelo a priori de la señal; ayuda cuando describe lo que la señal es y no cuando no. Con cualquier filtro lineal (toda penalización cuadrática) el pulso queda limitado a las $\approx30$ direcciones informadas; recuperar bordes requiere un prior no cuadrático, por ejemplo la variación total, que explota que la señal es constante a trozos y sale de los métodos lineales.
 
 ## 9. Estimar el nivel de ruido a partir de los datos (entrega final)
 
@@ -203,9 +203,9 @@ Tabla `09_estimacion_delta`, figura 18. Método en la sección 8.4 del desarroll
 
 (medianas en 50 semillas; el cociente $\hat\delta/\lVert e\rVert$ no depende de $\eta$ porque la cola es ruido puro en los tres niveles)
 
-- El estimador queda dentro de $\pm15\,\%$ del valor real, como predice su desviación teórica ($1/\sqrt{2\cdot64}\approx9\,\%$), y no fue inviable en ninguna semilla.
+- El estimador queda dentro de $\pm15\,\%$ del valor real, con desviación empírica del $6.3\,\%$, como predice la teoría para ruido de dirección uniforme en la esfera ($\sqrt{(m-q)/(2q(m+2))}\approx6.2\,\%$; desarrollo §8.4), y no fue inviable en ninguna semilla.
 - La discrepancia con $\hat\delta$ da el mismo error que con $\lVert e\rVert$ exacto. Toda la cadena (SVD, estimación del ruido, elección de $\lambda$, reconstrucción) corre sin conocer $e$ ni $x_{\mathrm{true}}$; la verdad solo se usa para calificar.
-- El refinamiento de $\lambda$ por bisección (tabla `09_lambda_refinado`) mueve $\lambda$ entre 1 % y 5 % y cambia el error en menos de $10^{-4}$: la malla ya era suficiente.
+- El refinamiento de $\lambda$ por bisección (tabla `09_lambda_refinado`) mueve $\lambda$ entre 1 % y 5 % hacia arriba y sube el error en menos de $10^{-4}$ (coherente con que la discrepancia sobrerregulariza): la malla ya era suficiente.
 
 ## 10. Limitaciones de estos resultados
 
@@ -214,5 +214,5 @@ Tabla `09_estimacion_delta`, figura 18. Método en la sección 8.4 del desarroll
 - En la imagen, el desenfoque es gaussiano y separable con bordes renormalizados; otros desenfoques reales (movimiento en diagonal, desenfoque circular de una lente) no son separables y requerirían otra forma de calcular la SVD. En el audio, la convolución es circular (sección 9.2 del desarrollo).
 - La malla de $\lambda$ es finita, con 6 puntos por década. Su extremo inferior influye en la viabilidad de la discrepancia y en el óptimo cuando hay poco ruido; por eso la sección 5 usa una malla ampliada.
 - Varias cantidades calculadas están afectadas por el redondeo: el $\kappa_2$, la meseta de $\sigma_i$, el residuo de la pinv completa y la monotonía del residuo de la TSVD para $k\ge94$. Las hemos señalado donde aparecen.
-- La ampliación compara penalizaciones cuadráticas; no probamos penalizaciones no cuadráticas (variación total), que son las que recuperan bordes.
+- La ampliación compara penalizaciones cuadráticas; no probamos priors no cuadráticos (variación total, Huber), que son los que pueden recuperar bordes.
 - Un buen resultado con una señal sintética no garantiza el mismo desempeño con datos reales.

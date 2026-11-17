@@ -84,7 +84,10 @@ class GSVD:
 
     @classmethod
     def de(cls, A: np.ndarray, L: np.ndarray) -> "GSVD":
+        """Requiere m >= n (A con al menos tantas filas como columnas) y ker A ∩ ker L = {0}."""
         m, n = A.shape
+        if m < n:
+            raise ValueError("esta construcción de la GSVD requiere m >= n")
         if not nucleos_disjuntos(A, L):
             raise ValueError("ker A ∩ ker L ≠ {0}: la GSVD así definida requiere [A; L] de rango completo")
         Q, R = np.linalg.qr(np.vstack([A, L]), mode="reduced")   # (m+p) x n, R invertible
@@ -93,8 +96,14 @@ class GSVD:
         # Q1^T Q1 + Q2^T Q2 = I  =>  las columnas de Q2 W son ortogonales con normas s_i = sqrt(1 - c_i^2).
         # Se calculan directamente (sqrt(1 - c^2) pierde precisión cuando c ≈ 1, en las direcciones de ker L).
         s = np.linalg.norm(Q2 @ Wt.T, axis=0)
-        # Tolerancia de rango (como en pinv): un s_i por debajo es una dirección de ker L con redondeo.
-        s[s < 100 * max(m + L.shape[0], n) * np.finfo(float).eps] = 0.0
+        # Las dim(ker L) direcciones de ker L tienen c_i = 1 y s_i = 0 exactos; numéricamente sus s_i
+        # salen como redondeo (hasta ~1e-12 con L_2, porque los c_i se agrupan en 1 y la SVD mezcla esas
+        # direcciones). Como la dimensión de ker L se conoce, se fijan en 0 las dim(ker L) direcciones
+        # de mayor c_i (la SVD las devuelve ordenadas) en lugar de depender solo de un umbral.
+        k = n - np.linalg.matrix_rank(L)
+        s[:k] = 0.0
+        if k < n and s[k] < 100 * max(m + L.shape[0], n) * np.finfo(float).eps:
+            raise ValueError("la dirección siguiente a ker L tiene s_i al nivel del redondeo: GSVD no fiable")
         X = sla.solve_triangular(R, Wt.T, lower=False)            # X = R^{-1} W  =>  X^{-1} = W^T R
         return cls(U=U, c=c, s=s, X=X)
 

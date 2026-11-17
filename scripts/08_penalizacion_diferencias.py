@@ -71,6 +71,7 @@ for senal, x_true in SENALES.items():
             r = X[i_d] - x_true
             filas.append({"señal": senal, "eta": eta, "L": nombre,
                           "λ discrepancia": float(lam_d), "error discrepancia": float(err[i_d]),
+                          "Σ f_i (g.l. efectivos, disc.)": float(G.factores_filtro_general(g, lam_d).sum()),
                           "λ oráculo": float(LAMBDAS[i_o]), "error oráculo": float(err[i_o]),
                           "error en [0.55,0.8] (disc.)": float(np.linalg.norm(r[PULSO]) / np.linalg.norm(x_true)),
                           "residuo/δ (disc.)": residuo(A, X[i_d], b) / delta})

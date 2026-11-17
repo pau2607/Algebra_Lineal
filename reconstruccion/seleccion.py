@@ -70,10 +70,13 @@ def estimar_delta(svd: SVD, b, fraccion_cola: float = 0.5) -> float:
 
         delta_hat = sqrt( m * media_{i en la cola} (u_i^T b)^2 ).
 
-    Con una cola de q coeficientes la desviación relativa del estimador es ~ 1/sqrt(2 q).
+    Para ruido de norma fija y dirección uniforme en la esfera, delta_hat / ||e|| depende solo
+    de la dirección de e y su desviación relativa es ~ sqrt((m - q) / (2 q (m + 2))) (≈ 6 % con
+    m = 128, q = 64). El valor 1/sqrt(2q) ≈ 9 % corresponde a ruido gaussiano comparado con su
+    sigma*sqrt(m), no con la norma realizada.
     """
     c = svd.coeficientes(b)
-    m = c.size
+    m = svd.U.shape[0]          # número de filas de A (dimensión de e), no min(m, n)
     i0 = int(round((1.0 - fraccion_cola) * m))
     cola = c[i0:]
     return float(np.sqrt(m * np.mean(cola ** 2)))

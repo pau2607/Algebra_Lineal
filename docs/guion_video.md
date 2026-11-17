@@ -99,13 +99,13 @@ En el espectro *(diapositiva 15)* se ve que devuelve los armónicos hasta cerca 
 
 Para la entrega final probamos cambiar la penalización: en vez de castigar el tamaño de x, castigar sus saltos, λ‖Lx‖², con L de primeras o segundas diferencias. La unicidad ahora exige que los núcleos de A y de L no se crucen; lo demostramos y se cumple, porque L anula las constantes y A no. Y la fórmula espectral necesita la SVD generalizada del par (A, L), que calculamos con una QR y una SVD; los factores de filtro quedan γᵢ²/(γᵢ² + λ).
 
-Resultado honesto *(diapositiva 16)*: para el escalón no cambia nada. Las tres penalizaciones dan el mismo error, porque los tres filtros dejan pasar las mismas 30 direcciones *(diapositiva 17)*. Un salto no es "suave" para ninguna penalización cuadrática. Pero para una señal realmente suave, el error baja diez veces: de 0.95 a 0.09 %. La penalización es un modelo a priori de la señal: ayuda cuando describe lo que la señal es.
+Resultado honesto *(diapositiva 16)*: para el escalón no cambia nada. Las tres penalizaciones dan el mismo error, porque los tres filtros dejan pasar las mismas 30 direcciones *(diapositiva 17)*. Un salto no es "suave" para ninguna penalización cuadrática. Pero para una señal realmente suave, el error baja diez veces: de 0.95 a 0.09 %. La penalización es un modelo a priori de la señal: ayuda cuando describe lo que la señal es. Para recuperar bordes haría falta un prior no cuadrático, como la variación total, que ya no es un filtro lineal.
 
 ### 11. Conclusiones y limitaciones (Matías, 0:55)
 
 Tres conclusiones. Primera: una solución que ajusta los datos a la perfección puede ser inservible, porque ajustar es reproducir el ruido en las direcciones que A aplasta. Segunda: truncar o penalizar controla esa amplificación a costa de sesgo, y el parámetro se puede elegir sin conocer la verdad, estimando el ruido de los propios datos. Tercera: hay un límite que ningún método cruza. Lo que la observación destruyó, los bordes del escalón, los trazos finos de las letras, los agudos, no está en los datos.
 
-Limitaciones: el ruido es sintético e isotrópico; la imagen y el audio usan una sola semilla; los desenfoques reales no siempre son separables; y probamos solo penalizaciones cuadráticas. Recuperar bordes exigiría variación total, que sale del álgebra lineal. Y un buen resultado con una señal inventada no garantiza el mismo desempeño con datos reales.
+Limitaciones: el ruido es sintético e isotrópico; la imagen y el audio usan una sola semilla; los desenfoques reales no siempre son separables; y probamos solo penalizaciones cuadráticas, que son filtros lineales. Y un buen resultado con una señal inventada no garantiza el mismo desempeño con datos reales.
 
 ### 12. Cierre (Carlos, 0:25)
 

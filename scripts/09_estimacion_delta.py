@@ -52,6 +52,8 @@ for eta in ETAS:
     c = np.array(cocientes)
     filas.append({
         "eta": eta, "δ̂/‖e‖ mediana": float(np.median(c)), "δ̂/‖e‖ mín": float(c.min()), "δ̂/‖e‖ máx": float(c.max()),
+        "δ̂/‖e‖ desv. est. empírica": float(c.std(ddof=1)),
+        "desv. teórica √((m−q)/(2q(m+2)))": float(np.sqrt((N - (N - I0)) / (2 * (N - I0) * (N + 2)))),
         "Tikhonov: mediana error, δ exacto": float(np.median(err_exacto)),
         "Tikhonov: mediana error, δ̂ estimado": float(np.nanmedian(err_estimado)),
         "Tikhonov: mediana error oráculo": float(np.median(err_oraculo)),
