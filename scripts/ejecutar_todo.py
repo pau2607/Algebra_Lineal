@@ -14,6 +14,7 @@ SCRIPTS = [
     "06_audio.py",
     "07_diagnosticos.py",
     "08_penalizacion_diferencias.py",
+    "09_estimacion_delta.py",
 ]
 
 for nombre in SCRIPTS:

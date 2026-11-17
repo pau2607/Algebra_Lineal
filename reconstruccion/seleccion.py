@@ -55,3 +55,44 @@ def oraculo(reconstrucciones, x_true):
     errores = np.array([error_relativo(x, x_true) for x in reconstrucciones])
     idx = int(np.argmin(errores))
     return idx, float(errores[idx])
+
+
+# --------------------------------------------------------------------------
+# Estimación del nivel de ruido a partir de los datos (no usa e ni x_true)
+# --------------------------------------------------------------------------
+
+def estimar_delta(svd: SVD, b, fraccion_cola: float = 0.5) -> float:
+    """Estima ||e|| con la cola de los coeficientes de Picard.
+
+    Supuesto: en las últimas direcciones (i > (1 - fraccion_cola) * n) los sigma_i son tan
+    pequeños que u_i^T b = u_i^T e, es decir, la cola es solo ruido. Si e es isotrópico,
+    E[(u_i^T e)^2] = ||e||^2 / m, así que
+
+        delta_hat = sqrt( m * media_{i en la cola} (u_i^T b)^2 ).
+
+    Con una cola de q coeficientes la desviación relativa del estimador es ~ 1/sqrt(2 q).
+    """
+    c = svd.coeficientes(b)
+    m = c.size
+    i0 = int(round((1.0 - fraccion_cola) * m))
+    cola = c[i0:]
+    return float(np.sqrt(m * np.mean(cola ** 2)))
+
+
+def discrepancia_tikhonov_refinada(A, b, svd: SVD, lambdas, delta: float, tau: float = 1.1, iteraciones: int = 40):
+    """Como `discrepancia_tikhonov`, pero refina por bisección entre el último lambda viable y el
+    siguiente de la malla, usando que el residuo es no decreciente en lambda (desarrollo §6.2).
+    Devuelve lambda con ||A x_lambda - b|| = tau * delta hasta la precisión de la bisección, o None.
+    """
+    lambdas = np.asarray(lambdas)
+    lam, idx = discrepancia_tikhonov(A, b, svd, lambdas, delta, tau)
+    if lam is None or idx + 1 >= lambdas.size:
+        return lam
+    lo, hi = lambdas[idx], lambdas[idx + 1]          # residuo(lo) <= tau*delta < residuo(hi)
+    for _ in range(iteraciones):
+        mid = np.sqrt(lo * hi)                        # bisección en escala logarítmica
+        if residuo(A, tikhonov_espectral(svd, b, mid), b) <= tau * delta:
+            lo = mid
+        else:
+            hi = mid
+    return float(lo)

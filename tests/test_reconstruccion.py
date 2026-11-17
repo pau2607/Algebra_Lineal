@@ -198,3 +198,28 @@ def test_regularizacion_mejora_a_la_pseudoinversa():
     lam, _ = SEL.discrepancia_tikhonov(A, b, svd, lambdas, np.linalg.norm(e))
     assert error_relativo(M.tikhonov_espectral(svd, b, lam), x_true) < 0.2
     assert error_relativo(x_pinv, x_true) > 1e6
+
+
+# --------------------------------------------------------------------------
+# Entrega final: estimación de delta y refinamiento de lambda
+# --------------------------------------------------------------------------
+
+def test_estimar_delta_no_usa_e_y_aproxima_su_norma():
+    import inspect
+    params = inspect.signature(SEL.estimar_delta).parameters
+    assert "e" not in params and "x_true" not in params
+    for semilla in (1, 2, 3, 2026):
+        t, A, x_true, _, e, b = datos.problema(eta=1e-3, semilla=semilla)
+        cociente = SEL.estimar_delta(M.SVD.de(A), b) / np.linalg.norm(e)
+        assert 0.7 < cociente < 1.4
+
+
+def test_discrepancia_refinada_alcanza_el_umbral():
+    t, A, x_true, _, e, b = datos.problema(eta=1e-3)
+    svd = M.SVD.de(A)
+    lambdas = svd.sigma[0] ** 2 * np.logspace(-10, 0, 61)
+    delta, tau = np.linalg.norm(e), 1.1
+    lam_m, _ = SEL.discrepancia_tikhonov(A, b, svd, lambdas, delta, tau)
+    lam_r = SEL.discrepancia_tikhonov_refinada(A, b, svd, lambdas, delta, tau)
+    assert lam_m <= lam_r < lam_m * 10 ** (1 / 6)
+    assert residuo(A, M.tikhonov_espectral(svd, b, lam_r), b) == pytest.approx(tau * delta, rel=1e-6)
