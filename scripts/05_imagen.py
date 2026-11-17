@@ -44,7 +44,23 @@ def cargar_imagen(ruta, n=N_IMG):
 
 
 def imagen_texto(n=N_IMG):
-    """Texto negro sobre blanco, generado con matplotlib (determinista)."""
+    """Texto negro sobre blanco.
+
+    Se carga de recursos/texto_256.png, que se generó una vez con la función de abajo.
+    No se redibuja en cada ejecución porque el renderizado de la fuente cambia de un
+    computador a otro (versión de freetype, fuentes instaladas) y eso alteraba las
+    cifras de la tabla. Si el archivo no existe, se regenera y se guarda.
+    """
+    ruta = RAIZ / "recursos" / "texto_256.png"
+    if ruta.exists():
+        return cargar_imagen(ruta)
+    X = _dibujar_texto(n)
+    Image.fromarray(np.round(np.clip(X, 0, 1) * 255).astype(np.uint8), mode="L").save(ruta)
+    return X
+
+
+def _dibujar_texto(n=N_IMG):
+    """Dibuja el texto con matplotlib (solo si falta recursos/texto_256.png)."""
     fig = plt.figure(figsize=(1, 1), dpi=n, facecolor="white")
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")

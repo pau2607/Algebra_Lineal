@@ -83,15 +83,6 @@ def guardar_tabla(filas, nombre: str, columnas=None):
         w.writeheader()
         w.writerows(filas)
 
-    def fmt(v):
-        if isinstance(v, float):
-            return f"{v:.4g}"
-        return "-" if v is None else str(v)
-
-    lineas = ["| " + " | ".join(columnas) + " |", "|" + "---|" * len(columnas)]
-    for fila in filas:
-        lineas.append("| " + " | ".join(fmt(fila[c]) for c in columnas) + " |")
-    (DIR_TAB / f"{nombre}.md").write_text("\n".join(lineas) + "\n", encoding="utf-8")
     print(f"  tabla  -> resultados/tablas/{nombre}.csv")
 
 

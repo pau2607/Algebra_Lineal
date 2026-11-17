@@ -102,7 +102,7 @@ Después de la entrega parcial aplicamos las mismas reconstrucciones (en la imag
 │   ├── 08_penalizacion_diferencias.py  # ampliación: I, L1 y L2 en dos señales, 50 semillas
 │   ├── 09_estimacion_delta.py # nivel de ruido desde los datos y lambda refinado
 │   └── ejecutar_todo.py
-├── recursos/gato_256.png     # foto de prueba (scikit-image, CC0)
+├── recursos/                  # gato_256.png (foto de prueba, scikit-image, CC0) y texto_256.png (imagen de texto congelada)
 ├── tests/
 │   ├── test_reconstruccion.py
 │   ├── test_aplicaciones.py   # imagen y audio contra las matrices grandes formadas en casos pequeños
