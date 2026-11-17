@@ -1,4 +1,4 @@
-"""Diagnósticos que respaldan las interpretaciones de docs/resultados_preliminares.md.
+"""Diagnósticos que respaldan las interpretaciones de docs/resultados.md.
 
 Para la semilla 2026 y cada eta:
   * dónde se concentra el error de Tikhonov (región del pulso);

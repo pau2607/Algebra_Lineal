@@ -4,7 +4,7 @@
 
 **Tema asignado:** Reconstrucción de señales con ruido (Pseudoinversa, SVD truncada y regularización de Tikhonov. Incluye selección del parámetro y experimento reproducible.)
 
-**Versión:** Entrega parcial + ejemplos prácticos de imagen y audio (en desarrollo hacia la entrega final)
+**Versión:** Entrega final — etiqueta `entrega-final`
 
 **Integrantes:** Paula Romero, Carlos Ledo y Matías Desmonteix
 
@@ -19,18 +19,22 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 3. Elegir el parámetro con el principio de discrepancia (sin $x_{\mathrm{true}}$) y cuantificar su distancia al mejor valor posible (oráculo).
 4. Explicar con la SVD qué parte del error se debe al ruido y qué parte es información perdida.
 5. Llevar el mismo método a datos que se puedan ver y oír: una imagen desenfocada y un sonido apagado (retroalimentación de la entrega parcial).
+6. Ampliación: cambiar la penalización $\lambda\lVert x\rVert^2$ por $\lambda\lVert Lx\rVert^2$ (diferencias) y estimar el nivel de ruido a partir de los datos, para que toda la cadena funcione sin conocer ni $e$ ni $x_{\mathrm{true}}$.
 
-## Estado de la entrega parcial
+## Qué se entrega
 
 | Qué se entrega | Dónde |
 |---|---|
 | Problema, objetivo y alcance actualizados | `docs/desarrollo_matematico.md` (sección 1) |
 | Desarrollo matemático con demostraciones | `docs/desarrollo_matematico.md` |
 | Implementación | `reconstruccion/` (paquete) y `scripts/` |
-| Resultados preliminares, comprobaciones e interpretación | `docs/resultados_preliminares.md`, `resultados/` |
-| Pruebas automáticas (45) | `tests/test_reconstruccion.py` (23), `tests/test_aplicaciones.py` (22) |
-| **Nuevo:** ejemplos prácticos de imagen y audio | `docs/desarrollo_matematico.md` §9, `docs/resultados_preliminares.md` §7, `resultados/imagen/`, `resultados/audio/` |
-| Guion del video | `docs/guion_video.md` |
+| Resultados, comprobaciones e interpretación | `docs/resultados.md`, `resultados/` |
+| Pruebas automáticas (61) | `tests/test_reconstruccion.py` (25), `tests/test_aplicaciones.py` (22), `tests/test_general.py` (14) |
+| Ejemplos prácticos de imagen y audio | `docs/desarrollo_matematico.md` §9, `docs/resultados.md` §7, `resultados/imagen/`, `resultados/audio/` |
+| Ampliación: penalización de diferencias (GSVD) | `docs/desarrollo_matematico.md` §10, `docs/resultados.md` §8, `reconstruccion/general.py`, `scripts/08_penalizacion_diferencias.py` |
+| Estimación del nivel de ruido y refinamiento de $\lambda$ | `docs/desarrollo_matematico.md` §8.4, `docs/resultados.md` §9, `scripts/09_estimacion_delta.py` |
+| Preguntas de defensa con respuestas | `docs/desarrollo_matematico.md` §11 |
+| Guion del video y diapositivas | `docs/guion_video.md`, `docs/diapositivas/` |
 | Responsabilidades, contribuciones, pendientes y cronograma | `docs/organizacion.md` |
 | Declaración de uso de IA | `DECLARACION_IA.md` |
 
@@ -44,10 +48,13 @@ Una señal $x_{\mathrm{true}}\in\mathbb R^{128}$ (una zona suave y un pulso rect
 
 (error relativo $\lVert x-x_{\mathrm{true}}\rVert/\lVert x_{\mathrm{true}}\rVert$)
 
-- La pseudoinversa ajusta los datos por debajo del nivel del ruido y aun así se equivoca por un factor de $10^{8}$ o más.
+- La pseudoinversa ajusta los datos por debajo del nivel del ruido y aun así se equivoca por un factor de $10^{7}$ a $10^{10}$.
 - Con regularización el error baja a 9–12 %. En 50 semillas, la discrepancia queda en mediana entre 0.5 % y 14 % por encima del oráculo.
-- Subestimar el ruido a la mitad hace inviable la regla; sobrestimarlo al doble cuesta poco.
-- El error restante es casi todo sesgo en los bordes del pulso: sin ruido, el mínimo posible sigue siendo 5.4 %.
+- Subestimar el ruido a la mitad deja la regla sin solución en la malla (o la lleva a reproducir ruido); sobrestimarlo al doble cuesta poco. El nivel de ruido se puede estimar con la cola de los coeficientes de Picard: $\hat\delta/\lVert e\rVert\in[0.89,1.15]$ en 50 semillas, con el mismo error final.
+- El error restante es casi todo sesgo en los bordes del pulso y baja muy despacio con el ruido: con $\eta=10^{-10}$ sigue en 6.5 % y sin ruido, en doble precisión, en 5.4 %.
+- Ampliación: penalizar las diferencias ($\lambda\lVert L x\rVert^2$) no cambia nada para el pulso (las tres penalizaciones cortan en las mismas ≈ 30 direcciones), pero para una señal suave reduce el error diez veces (de 0.95 % a 0.09 % con $L_2$). La penalización es un modelo a priori de la señal.
+
+![Penalizaciones](resultados/figuras/15_penalizaciones_reconstrucciones.png)
 
 ![Reconstrucciones](resultados/figuras/06_reconstrucciones.png)
 
@@ -78,8 +85,9 @@ Después de la entrega parcial aplicamos las mismas reconstrucciones (en la imag
 ├── reconstruccion/            # paquete con la implementación
 │   ├── datos.py               #   señal, matriz de suavizado, ruido con semilla
 │   ├── metodos.py             #   SVD, pinv, SVD truncada, Tikhonov (espectral, aumentado QR, normales)
-│   ├── seleccion.py           #   discrepancia (sin x_true) y oráculo (con x_true)
+│   ├── seleccion.py           #   discrepancia (sin x_true), oráculo (con x_true), estimación de delta, bisección
 │   ├── metricas.py            #   error relativo, residuo, norma
+│   ├── general.py             #   ampliación: Tikhonov con lambda ||L x||^2, GSVD por QR + SVD
 │   ├── separable.py           #   imagen: B = A_v X A_h^T, SVD de Kronecker, TSVD y Tikhonov matriciales
 │   └── circulante.py          #   audio: convolución circular, SVD vía Fourier
 ├── scripts/
@@ -90,20 +98,25 @@ Después de la entrega parcial aplicamos las mismas reconstrucciones (en la imag
 │   ├── 04_variacion_s.py      # exploración: s = 0.02, 0.03, 0.05
 │   ├── 05_imagen.py           # ejemplo práctico: gato y texto desenfocados (--imagen para una foto propia)
 │   ├── 06_audio.py            # ejemplo práctico: melodía apagada (--audio para un .wav propio)
+│   ├── 07_diagnosticos.py     # cifras citadas en la interpretación, barrido de eta, rango de A^T A
+│   ├── 08_penalizacion_diferencias.py  # ampliación: I, L1 y L2 en dos señales, 50 semillas
+│   ├── 09_estimacion_delta.py # nivel de ruido desde los datos y lambda refinado
 │   └── ejecutar_todo.py
 ├── recursos/gato_256.png     # foto de prueba (scikit-image, CC0)
 ├── tests/
 │   ├── test_reconstruccion.py
-│   └── test_aplicaciones.py   # imagen y audio contra las matrices grandes formadas en casos pequeños
+│   ├── test_aplicaciones.py   # imagen y audio contra las matrices grandes formadas en casos pequeños
+│   └── test_general.py        # ampliación: GSVD, unicidad, límites, discrepancia
 ├── docs/
 │   ├── desarrollo_matematico.md
-│   ├── resultados_preliminares.md
+│   ├── resultados.md
 │   ├── guion_video.md
+│   ├── diapositivas/          # diapositivas del video
 │   └── organizacion.md
 └── resultados/                # generado por los scripts
     ├── configuracion.json     # semilla, tolerancias, sigma_i, versiones
     ├── figuras/*.png
-    ├── tablas/*.csv, *.md
+    ├── tablas/*.csv
     ├── imagen/*.png           # imágenes sueltas para las diapositivas
     └── audio/*.wav            # original, observado y reconstruido
 ```
@@ -114,8 +127,8 @@ Requiere Python ≥ 3.10.
 
 ```bash
 pip install -r requirements.txt
-python scripts/ejecutar_todo.py   # regenera resultados/ (≈ 20 s)
-python -m pytest -q               # 45 pruebas
+python scripts/ejecutar_todo.py   # regenera resultados/ (≈ 40 s)
+python -m pytest -q               # 61 pruebas
 ```
 
 ### Parámetros registrados
@@ -126,14 +139,17 @@ python -m pytest -q               # 45 pruebas
 | Semilla del ruido | 2026 (robustez: semillas 1–50) |
 | Malla de $\lambda/\sigma_1^2$ | 61 valores entre $10^{-10}$ y $1$ |
 | SVD truncada | $k = 1,\dots,128$ |
-| Discrepancia | $\tau = 1.1$, $\delta = \lVert e\rVert$ |
+| Discrepancia | $\tau = 1.1$, $\delta = \lVert e\rVert$ (y $\hat\delta$ estimado con la cola $i>64$ de Picard en el script 09) |
+| Ampliación | $L_1$, $L_2$ de diferencias; malla absoluta de $\lambda$: 109 valores entre $10^{-14}$ y $10^{4}$ |
 | Umbral de `pinv` (SciPy, por defecto) | $2.84\times10^{-14}$ → rango 89 |
 
 Detalle completo (valores singulares, versiones) en `resultados/configuracion.json`.
 
 ## Video
 
-*Pendiente (entrega final).*
+Enlace: *(pegar aquí el enlace del video de 10 minutos)*
+
+Guion con tiempos: `docs/guion_video.md`. Diapositivas: `docs/diapositivas/`.
 
 ## Referencias
 

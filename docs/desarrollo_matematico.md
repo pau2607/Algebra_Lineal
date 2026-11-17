@@ -2,7 +2,7 @@
 
 **Proyecto:** Reconstrucción de señales con ruido pseudoinversa, valores singulares y regularización de Tikhonov
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
-**Estado:** entrega parcial + ejemplos prácticos (imagen y audio) agregados después de la retroalimentación
+**Estado:** entrega final + ejemplos prácticos (imagen y audio) agregados después de la retroalimentación
 
 Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2 (para columnas independientes; si $A$ es singular se toma $\kappa_2=\infty$). En Tikhonov, $\lambda$ es directamente el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
 
@@ -39,7 +39,7 @@ $$
 
 ### 1.4 Alcance
 
-Incluye: señal unidimensional, penalización identidad $\lambda\lVert x\rVert^2$, SVD calculada con NumPy (no se programa desde cero), principio de discrepancia y curva L solo como gráfico exploratorio.
+Incluye: señal unidimensional con las tres reconstrucciones, SVD calculada con NumPy (no se programa desde cero), principio de discrepancia con $\delta$ conocido y con $\delta$ estimado de los datos (sección 8.4), ejemplos prácticos con una imagen y un sonido (sección 9) y, como ampliación, la penalización de diferencias $\lambda\lVert Lx\rVert^2$ (sección 10). La curva L solo se grafica.
 
 Después de la entrega parcial, y siguiendo la retroalimentación del docente, agregamos dos ejemplos prácticos con el mismo método (sección 9): una imagen de $256\times256$ desenfocada (fotografía y texto) y un audio de 2 s con los agudos apagados. Se pueden ver y escuchar en `resultados/imagen/` y `resultados/audio/`.
 
@@ -248,6 +248,18 @@ En este experimento tomamos $\delta=\lVert e\rVert$ (conocido porque generamos e
 
 Dibujamos $\log\lVert Ax_\lambda-b\rVert$ frente a $\log\lVert x_\lambda\rVert$. Su esquina es una heurística de compromiso; en esta entrega solo se grafica, no se usa para elegir.
 
+### 8.4 Estimar $\delta$ a partir de los datos (entrega final)
+
+En un problema real no se conoce $\lVert e\rVert$. Pero el gráfico de Picard sugiere cómo estimarlo: en las últimas direcciones los $\sigma_i$ son tan pequeños que $u_i^T(Ax_{\mathrm{true}})=\sigma_iv_i^Tx_{\mathrm{true}}$ es despreciable y, por tanto, $u_i^Tb\approx u_i^Te$: la cola de los coeficientes es solo ruido. Por la sección 4, $\mathbb E[(u_i^Te)^2]=\lVert e\rVert^2/m$, así que
+
+$$
+\hat\delta=\sqrt{m\cdot\operatorname{media}_{i>i_0}\,(u_i^Tb)^2},\qquad i_0=n/2 .
+$$
+
+Supuesto: las direcciones $i>i_0$ no contienen señal. Con nuestra $A$, $\sigma_{64}\approx10^{-8}$, así que vale para cualquier $\eta\ge10^{-8}$. Con $q=64$ coeficientes en la cola, la desviación relativa del estimador es $\approx1/\sqrt{2q}\approx9\,\%$: en 50 semillas, $\hat\delta/\lVert e\rVert$ queda entre $0.89$ y $1.15$ (tabla `09_estimacion_delta`). Usar $\hat\delta$ en lugar de $\lVert e\rVert$ no cambia la mediana del error de la discrepancia (sección 4 de los resultados). Con esto, toda la cadena de reconstrucción se puede ejecutar sin conocer ni $e$ ni $x_{\mathrm{true}}$; la verdad solo se usa para calificar.
+
+**Refinamiento de $\lambda$.** La malla tiene resolución $10^{1/6}\approx1.47$. Como el residuo es no decreciente en $\lambda$ (sección 6.2), entre el último $\lambda$ viable y el siguiente hay exactamente un punto donde $\lVert Ax_\lambda-b\rVert=\tau\delta$, que se encuentra por bisección (`discrepancia_tikhonov_refinada`). El cambio en el error es menor que $10^{-4}$: la malla ya era suficiente.
+
 ## 9. Ejemplos prácticos: una imagen y un sonido
 
 Incorporamos la retroalimentación del docente a la entrega parcial: mostrar la reconstrucción sobre datos que se puedan *ver* y *escuchar*. No cambiamos de método: usamos las mismas reconstrucciones y la misma regla de discrepancia de las secciones 3 a 8 (en la imagen, las tres: pseudoinversa, SVD truncada y Tikhonov; en el audio, la pseudoinversa completa y Tikhonov). Lo nuevo es cómo obtener la SVD cuando la matriz es demasiado grande para formarla. Usamos un suavizado con el mismo ancho del experimento principal ($0.03\times127\approx3.8$ píxeles o muestras), así que la "dificultad" del operador es comparable.
@@ -329,6 +341,87 @@ y el residuo también se puede calcular en frecuencia gracias a la identidad de 
 **Comprobación.** `tests/test_aplicaciones.py` forma la circulante con `scipy.linalg.circulant` para $N=48$ y verifica que los valores singulares son $|\hat h_k|$ y que Tikhonov por Fourier coincide con la SVD y con el sistema aumentado (QR).
 
 **Limitación del modelo.** La convolución circular "pega" el final del audio con su inicio. Afecta solo a unas $3\sigma\approx11$ muestras (1.5 ms) en cada extremo y no se nota al escuchar. Un modelo sin esta periodicidad necesitaría una matriz de Toeplitz y otra forma de calcular la SVD.
+
+## 10. Ampliación: penalización de diferencias $\lambda\lVert Lx\rVert^2$
+
+### 10.1 Motivación
+
+Tikhonov clásico penaliza $\lVert x\rVert^2$: prefiere soluciones *pequeñas*. Pero lo que delata al ruido amplificado no es su tamaño sino sus *oscilaciones*: saltos grandes entre puntos vecinos. Penalizar las diferencias
+
+$$
+x_\lambda=\arg\min_x\Big\{\lVert Ax-b\rVert^2+\lambda\lVert Lx\rVert^2\Big\},\qquad
+L_1=\begin{pmatrix}-1&1&&\\&-1&1&\\&&\ddots&\ddots\\&&&-1&1\end{pmatrix}\in\mathbb R^{(n-1)\times n},
+$$
+
+castiga la rugosidad y deja libres las constantes ($L_1\mathbf 1=0$). Con $L_2$ (segundas diferencias, $(L_2x)_j=x_j-2x_{j+1}+x_{j+2}$) se dejan libres las rectas. La penalización codifica qué consideramos una solución "simple".
+
+### 10.2 Unicidad
+
+**Proposición 5.** El problema tiene solución única para todo $\lambda>0$ si y solo si $\ker A\cap\ker L=\{0\}$.
+
+*Demostración.* La hessiana de la función objetivo es $2(A^TA+\lambda L^TL)$ y
+
+$$
+z^T(A^TA+\lambda L^TL)z=\lVert Az\rVert^2+\lambda\lVert Lz\rVert^2\ \ge 0,
+$$
+
+con igualdad si y solo si $Az=0$ y $Lz=0$, es decir, $z\in\ker A\cap\ker L$. Si la intersección es trivial, la matriz es definida positiva y hay un único mínimo, solución de $(A^TA+\lambda L^TL)x=A^Tb$. Si hay $z\neq0$ en la intersección, $x+tz$ tiene el mismo valor objetivo para todo $t$ y el mínimo no es único. $\square$
+
+En nuestro problema $\ker L_1=\operatorname{span}\{\mathbf 1\}$ y $A\mathbf 1=\mathbf 1\neq0$ (las filas suman 1), así que la condición se cumple aunque $A$ fuera singular. Para $L_2$, $\ker L_2=\operatorname{span}\{\mathbf 1,t\}$ y $A$ no anula ninguna recta. `test_nucleos_disjuntos` lo comprueba y muestra un contraejemplo: si $A$ anulara las constantes (una $A$ "centrada"), con $L_1$ la solución no sería única.
+
+### 10.3 Fórmula espectral: la SVD generalizada
+
+Con $L\neq I$ la SVD de $A$ ya no diagonaliza el problema, porque $L^TL$ no es la identidad en la base $V$. La herramienta adecuada es la **SVD generalizada** (GSVD, Paige–Saunders [2], [3]) del par $(A,L)$:
+
+$$
+A=U\,C\,X^{-1},\qquad L=V\,S\,X^{-1},\qquad C=\operatorname{diag}(c_i),\ S=\operatorname{diag}(s_i),\ c_i^2+s_i^2=1,
+$$
+
+con $U$, $V$ de columnas ortonormales y $X$ invertible (no ortogonal). Los cocientes $\gamma_i=c_i/s_i$ son los *valores singulares generalizados*; $\gamma_i=\infty$ en las direcciones de $\ker L$ ($s_i=0$).
+
+**Cómo la calculamos (sin bibliotecas externas).** Sea $\begin{pmatrix}A\\L\end{pmatrix}=QR$ una QR reducida ($R$ invertible por la Proposición 5) y $Q=\begin{pmatrix}Q_1\\Q_2\end{pmatrix}$. Como $Q^TQ=I$, $Q_1^TQ_1+Q_2^TQ_2=I$. Tomamos la SVD $Q_1=U\,C\,W^T$; entonces $W^TQ_2^TQ_2W=I-C^2$ es diagonal, así que las columnas de $Q_2W$ son ortogonales con normas $s_i=\sqrt{1-c_i^2}$, y $Q_2W=VS$. Con $X=R^{-1}W$ queda $A=Q_1R=UC\,W^TR=UCX^{-1}$ y $L=Q_2R=VSX^{-1}$. (En el código $s_i$ se calcula como norma de las columnas de $Q_2W$, porque $\sqrt{1-c_i^2}$ pierde precisión cuando $c_i\approx1$.)
+
+**Teorema 3 (fórmula espectral generalizada).** Si $\ker A\cap\ker L=\{0\}$,
+
+$$
+x_\lambda=\sum_{i=1}^{n}\frac{c_i}{c_i^2+\lambda s_i^2}\,(u_i^Tb)\,x_i
+=\sum_{i=1}^{n}f_i(\lambda)\,\frac{u_i^Tb}{c_i}\,x_i,\qquad
+f_i(\lambda)=\frac{c_i^2}{c_i^2+\lambda s_i^2}=\frac{\gamma_i^2}{\gamma_i^2+\lambda},
+$$
+
+donde $x_i$ son las columnas de $X$.
+
+*Demostración.* Sustituyendo la GSVD en las ecuaciones normales, $A^TA+\lambda L^TL=X^{-T}(C^2+\lambda S^2)X^{-1}$ y $A^Tb=X^{-T}CU^Tb$. Como $X^{-T}$ es invertible, el sistema equivale a $(C^2+\lambda S^2)X^{-1}x=CU^Tb$, diagonal: $X^{-1}x=\operatorname{diag}\big(c_i/(c_i^2+\lambda s_i^2)\big)U^Tb$. Multiplicando por $X$ se obtiene la fórmula. La matriz diagonal es invertible porque $c_i^2+\lambda s_i^2>0$ (si $c_i=s_i=0$, la columna $i$ de $\begin{pmatrix}A\\L\end{pmatrix}X$ sería nula, contra la invertibilidad de $R$). $\square$
+
+Con $L=I$ se tiene $c_i=\sigma_i/\sqrt{1+\sigma_i^2}$, $s_i=1/\sqrt{1+\sigma_i^2}$, $\gamma_i=\sigma_i$ y $X=VS$ (las columnas de $V$ escaladas por $s_i$; al sustituir, los factores $s_i$ se cancelan), y se recupera el Teorema 2 (`test_con_L_identidad_es_tikhonov_clasico`). Los factores de filtro siguen la misma lógica: $f_i\approx1$ donde $\gamma_i^2\gg\lambda$, $f_i\approx\gamma_i^2/\lambda$ donde $\gamma_i^2\ll\lambda$, y $f_i=1$ exactamente en $\ker L$: esas direcciones **nunca se penalizan**. El residuo es $\sum_i\big(\lambda s_i^2/(c_i^2+\lambda s_i^2)\big)^2(u_i^Tb)^2$, no decreciente en $\lambda$, así que la discrepancia se aplica sin cambios. Límites: $\lambda\to0^+$ da $A^\dagger b$; $\lambda\to\infty$ da la proyección sobre $\ker L$ que mejor ajusta los datos, que para $L_1$ es la constante $\operatorname{media}(b)$ porque $A\mathbf 1=\mathbf 1$ (`test_limite_lambda_grande_es_la_media`).
+
+**Comprobaciones.** La GSVD calculada reconstruye $A$ y $L$ con error $10^{-14}$; la fórmula espectral coincide con el sistema aumentado $\min\lVert\begin{pmatrix}A\\\sqrt\lambda L\end{pmatrix}x-\begin{pmatrix}b\\0\end{pmatrix}\rVert$ resuelto por QR hasta $10^{-7}$ relativo en toda la malla; el gradiente se anula en $x_\lambda$ (`tests/test_general.py`, 14 pruebas).
+
+### 10.4 Qué cambia y qué no (resultados en la sección 7 de los resultados)
+
+- **Para la señal con pulso, nada.** Con las tres penalizaciones el oráculo da el mismo error ($0.1008$ para $\eta=10^{-3}$) y la discrepancia, errores dentro del 4 % entre sí. Los factores de filtro muestran por qué (figura 17): los tres filtros dejan pasar las mismas $\approx30$ direcciones, porque el corte lo impone la caída de los $\sigma_i$ de $A$ frente al ruido, no la penalización. Un salto no es "simple" para ninguna penalización cuadrática: ni $\lVert x\rVert^2$, ni $\lVert L_1x\rVert^2$, ni $\lVert L_2x\rVert^2$ lo favorecen. Recuperar bordes exige una penalización no cuadrática (variación total, $\lVert L_1x\rVert_1$), que sale del álgebra lineal y de este proyecto.
+- **Para una señal suave, mucho.** Con $x(t)=0.5+0.4\sin(2\pi t)+0.2t$ (sin saltos y distinta de cero en los extremos), el error pasa de $1.0\,\%$ ($L=I$) a $0.44\,\%$ ($L_1$) y $0.08\,\%$ ($L_2$) con $\eta=10^{-3}$; en 50 semillas, de $0.95\,\%$ a $0.09\,\%$. La penalización $\lVert x\rVert^2$ empuja hacia cero una señal que no es pequeña; $\lVert L_2x\rVert^2$ solo castiga la curvatura, que en esta señal es pequeña de verdad.
+
+**Conclusión de la ampliación.** La penalización es un *modelo a priori* de la señal. Acierta cuando describe lo que la señal es (suave) y no ayuda cuando no (un pulso). El límite del pulso no está en el método sino en lo que la observación dejó en los datos.
+
+## 11. Preguntas de defensa, con nuestras respuestas
+
+Las seis de la sección 11 del artículo [1] y otras que anticipamos.
+
+1. **¿Cómo puede una solución de residuo cero ser mala?** El residuo mide el ajuste a $b$, que contiene ruido. Ajustar exactamente obliga a reproducir el ruido, y en direcciones con $\sigma_i$ pequeño eso exige coeficientes $u_i^Te/\sigma_i$ enormes. Ejemplo: $(1,11)$ con residuo 0 y error 10.
+2. **¿Qué dirección del ejemplo diagonal amplifica más el ruido?** La segunda ($v_2=e_2$), porque $\sigma_2=10^{-3}$: el factor es $1/\sigma_2=1000$.
+3. **¿Pseudoinversa vs. truncamiento numérico?** $A^\dagger$ divide entre todos los $\sigma_i>0$. `pinv` usa una tolerancia y trata como cero los $\sigma_i$ por debajo (conserva 89 de 128). Es una SVD truncada con un umbral pensado para el redondeo, no para el ruido de los datos, que es $10^{10}$ veces mayor; por eso aún da errores de $10^{8}$–$10^{10}$.
+4. **¿Por qué $\lambda>0$ asegura unicidad?** Porque $z^T(A^TA+\lambda I)z=\lVert Az\rVert^2+\lambda\lVert z\rVert^2>0$ para $z\neq0$, aunque $A$ tenga núcleo. Con $\lambda\lVert Lx\rVert^2$ hace falta además $\ker A\cap\ker L=\{0\}$ (Proposición 5).
+5. **¿Qué usa el oráculo que no se tiene en la realidad?** La señal verdadera $x_{\mathrm{true}}$, para calcular el error. La discrepancia usa solo $A$, $b$ y $\delta$; y $\delta$ se puede estimar de los datos (sección 8.4).
+6. **¿Qué se gana y qué se pierde al aumentar $\lambda$?** Se gana estabilidad (el ruido propagado baja; cota $\lVert e\rVert/2\sqrt\lambda$); se pierde fidelidad: más sesgo, mayor residuo y la señal se suaviza (los bordes del pulso se redondean).
+7. **¿Por qué no usan las ecuaciones normales?** Al formar $A^TA$ se pierde todo $\sigma_i<\sqrt{\varepsilon}\,\sigma_1\approx10^{-8}$: el rango numérico cae de 89 a 63. Con la SVD de $A$ o con QR no se pierde nada.
+8. **¿Es $A$ singular?** En aritmética exacta no (núcleo gaussiano definido positivo, filas normalizadas). Numéricamente sí: sus $\sigma_i$ pequeños están bajo $\varepsilon\sigma_1$, y el $\kappa_2\approx2\times10^{16}$ que devuelve el cálculo es un artefacto del redondeo, no el valor verdadero.
+9. **¿Qué significa que el residuo sea menor que $\lVert e\rVert$?** Que la solución explica parte del ruido como si fuera señal. La propia $x_{\mathrm{true}}$ tiene residuo exactamente $\lVert e\rVert$.
+10. **¿Por qué el error no mejora al bajar el ruido?** Sí mejora, pero despacio (12 % → 6.5 % al pasar de $\eta=10^{-2}$ a $10^{-10}$): los $\sigma_i$ caen como una gaussiana, así que cada década de ruido suma pocas direcciones útiles, y el 96–99 % del error está en los bordes del pulso, donde hacen falta direcciones que $A$ ya borró.
+11. **¿Por qué la penalización de diferencias no arregla los bordes?** Porque un salto no es "suave" bajo ninguna penalización cuadrática: los tres filtros cortan en las mismas direcciones. Sí ayuda (10–20 veces) cuando la señal es realmente suave.
+12. **¿Cómo elegirían $\lambda$ con datos reales?** Estimar $\hat\delta$ con la cola de Picard, aplicar la discrepancia con $\tau=1.1$ y, si hay duda, preferir sobrestimar el ruido: cuesta poco; subestimarlo lleva a reproducir ruido.
+13. **¿Cómo escala esto a una imagen?** Con el producto de Kronecker: la SVD de $A_h\otimes A_v$ sale de dos SVD de $256\times256$ (Proposición 3) y todas las fórmulas se aplican entrada por entrada sobre $C=U_v^TBU_h$.
+14. **¿Y a un audio?** La convolución circular es una matriz circulante, que la DFT diagonaliza (Proposición 4): Tikhonov es un ecualizador frecuencia por frecuencia, en $O(N\log N)$.
 
 ## Referencias
 
