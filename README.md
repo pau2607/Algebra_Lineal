@@ -147,7 +147,7 @@ Detalle completo (valores singulares, versiones) en `resultados/configuracion.js
 
 ## Video
 
-Enlace: se entrega junto con este repositorio en Blackboard.
+Enlace: https://drive.google.com/file/d/1f6V6hzGJYgebq6ZFQmRpZakfY03hbPrG/view?usp=sharing
 
 Guion con tiempos: `docs/guion_video.md`. Diapositivas: `docs/diapositivas/`.
 
