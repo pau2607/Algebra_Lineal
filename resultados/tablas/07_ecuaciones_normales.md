@@ -1,0 +1,6 @@
+| comprobación | valor |
+|---|---|
+| rango numérico de A (matrix_rank) | 89 |
+| rango numérico de AᵀA (matrix_rank) | 63 |
+| σ_i > √ε·σ1 (sobreviven al formar AᵀA) | 67 |
+| máx. dif. relativa normales regularizadas vs espectral (η=1e-3, 61 λ) | 4.454e-07 |

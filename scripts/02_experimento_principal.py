@@ -18,7 +18,8 @@ sigma = svd.sigma
 lambdas = sigma[0] ** 2 * LAMBDA_REL
 
 print(f"Problema: n = {N}, s = {S}, semilla = {SEMILLA}")
-print(f"  sigma_1 = {sigma[0]:.6g}, sigma_n = {sigma[-1]:.3g}, kappa_2(A) = {sigma[0] / sigma[-1]:.3g}")
+print(f"  sigma_1 = {sigma[0]:.6g}, sigma_n calculado = {sigma[-1]:.3g} (nivel de redondeo: "
+      f"A es numéricamente singular, kappa_2 >~ 1/eps)")
 print(f"  A simétrica: {np.allclose(A, A.T)}; filas suman 1: {np.allclose(A.sum(axis=1), 1)}")
 
 dmax = 0.0
@@ -89,7 +90,10 @@ guardar_tabla(curvas, "02_curvas_tikhonov")
 guardar_json({
     "n": N, "s": S, "semilla": SEMILLA, "etas": ETAS, "tau": TAU,
     "malla_lambda_rel": {"min": float(LAMBDA_REL[0]), "max": float(LAMBDA_REL[-1]), "puntos": len(LAMBDA_REL)},
-    "sigma_1": float(sigma[0]), "sigma_n": float(sigma[-1]), "kappa_2": float(sigma[0] / sigma[-1]),
+    "sigma_1": float(sigma[0]), "sigma_n_calculado": float(sigma[-1]),
+    "kappa_2_calculado": float(sigma[0] / sigma[-1]),
+    "nota_kappa": "sigma_n calculado está al nivel del redondeo (eps*sigma_1): kappa_2 calculado solo indica "
+                  "que A es numéricamente singular (kappa_2 >~ 1/eps); no es el valor verdadero",
     "pinv_scipy": {"rtol": "max(m,n)*eps (por defecto)", "umbral_absoluto": float(out[ETAS[0]]["umbral"]),
                    "rango_numerico": int(out[ETAS[0]]["rango"])},
     "numpy_matrix_rank_por_defecto": int(np.linalg.matrix_rank(A)),

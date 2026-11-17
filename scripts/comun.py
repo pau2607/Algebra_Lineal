@@ -92,7 +92,7 @@ def guardar_tabla(filas, nombre: str, columnas=None):
     for fila in filas:
         lineas.append("| " + " | ".join(fmt(fila[c]) for c in columnas) + " |")
     (DIR_TAB / f"{nombre}.md").write_text("\n".join(lineas) + "\n", encoding="utf-8")
-    print(f"  tabla  -> resultados/tablas/{nombre}.csv / .md")
+    print(f"  tabla  -> resultados/tablas/{nombre}.csv")
 
 
 def entorno():
@@ -103,11 +103,6 @@ def entorno():
         "matplotlib": matplotlib.__version__,
     }
 
-
-def guardar_json(obj, nombre: str):
-    ruta = RAIZ / "resultados" / nombre
-    ruta.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"  json   -> {ruta.relative_to(RAIZ)}")
 
 def guardar_json(obj, nombre: str):
     ruta = RAIZ / "resultados" / nombre

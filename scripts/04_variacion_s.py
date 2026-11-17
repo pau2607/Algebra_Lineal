@@ -29,19 +29,23 @@ for s in SS:
     i_o, err_o = SEL.oraculo(X, x_true)
     nivel = delta / np.sqrt(N)
     filas.append({
-        "s": s, "kappa_2(A)": float(svd.sigma[0] / svd.sigma[-1]), "rango pinv": rango,
+        # kappa_2 calculado solo es fiable si sigma_min está claramente sobre el redondeo (eps * sigma_1)
+        "s": s,
+        "kappa_2(A) calculado": (f"{svd.sigma[0] / svd.sigma[-1]:.3g}"
+                                 if svd.sigma[-1] > 100 * np.finfo(float).eps * svd.sigma[0] else "≳ 1e16 (no fiable)"),
+        "rango pinv": rango,
         "σ_i > ||e||/√n": int((svd.sigma > nivel).sum()),
         "λ/σ1² discrepancia": float(LAMBDA_REL[i_d]),
         "error discrepancia": error_relativo(X[i_d], x_true),
         "λ/σ1² oráculo": float(LAMBDA_REL[i_o]), "error oráculo": err_o,
     })
     axs[0].semilogy(np.arange(1, N + 1), svd.sigma, color=COLS[s], label=f"s = {s}")
+    axs[0].axhline(nivel, color=COLS[s], lw=1, ls="--")
     axs[1].plot(t, X[i_d], color=COLS[s], lw=1.6, label=f"s = {s} (discrepancia)")
     print(f"  s = {s}: rango pinv {rango}, error discrepancia {filas[-1]['error discrepancia']:.4f}, "
           f"oráculo {err_o:.4f}")
 
-axs[0].axhline(nivel, color=TINTA, lw=1, ls="--")
-axs[0].set_title(r"Espectro singular según s  (-- : $\|e\|/\sqrt{n}$)")
+axs[0].set_title(r"Espectro singular según s  (-- : $\|e\|/\sqrt{n}$ de cada s)")
 axs[0].set_xlabel("índice i")
 axs[0].legend(loc="upper right")
 axs[1].plot(t, x_true, color=TINTA, lw=2.4, label="verdad")

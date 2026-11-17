@@ -14,8 +14,9 @@
     "puntos": 61
   },
   "sigma_1": 1.0009921794957752,
-  "sigma_n": 4.55442093030952e-17,
-  "kappa_2": 2.1978473110252184e+16,
+  "sigma_n_calculado": 4.55442093030952e-17,
+  "kappa_2_calculado": 2.1978473110252184e+16,
+  "nota_kappa": "sigma_n calculado está al nivel del redondeo (eps*sigma_1): kappa_2 calculado solo indica que A es numéricamente singular (kappa_2 >~ 1/eps); no es el valor verdadero",
   "pinv_scipy": {
     "rtol": "max(m,n)*eps (por defecto)",
     "umbral_absoluto": 2.8449908867735774e-14,

@@ -4,7 +4,7 @@
 **Curso:** Álgebra Lineal Aplicada 2026-2, Universidad del Pacífico
 **Estado:** entrega parcial + ejemplos prácticos (imagen y audio) agregados después de la retroalimentación
 
-Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2. En Tikhonov, $\lambda$ es directamente el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
+Notación: $\lVert\cdot\rVert$ es la norma euclídea; $A^{\dagger}$, la pseudoinversa de Moore–Penrose; $\kappa_2(A)=\sigma_1/\sigma_n$, el número de condición en norma 2 (para columnas independientes; si $A$ es singular se toma $\kappa_2=\infty$). En Tikhonov, $\lambda$ es directamente el coeficiente de la penalización (no $\lambda^2$), igual que en el artículo de referencia [1].
 
 ## 1. Problema, objetivo y alcance
 
@@ -32,7 +32,7 @@ $$
 
 ### 1.3 Objetivo verificable
 
-1. Reproducir el ejemplo diagonal de dos coordenadas y comprobar que el código coincide con los cálculos a mano (tolerancia $10^{-10}$).
+1. Reproducir el ejemplo diagonal de dos coordenadas y comprobar que el código coincide con los cálculos a mano (las soluciones $x$ con tolerancia $10^{-10}$; los errores, que el artículo da redondeados, con $5\times10^{-4}$).
 2. Para cada $\eta$, comparar pseudoinversa numérica, SVD truncada y Tikhonov midiendo error relativo $\lVert x-x_{\mathrm{true}}\rVert/\lVert x_{\mathrm{true}}\rVert$, residuo $\lVert Ax-b\rVert$ y norma $\lVert x\rVert$.
 3. Elegir el parámetro con una regla que no usa $x_{\mathrm{true}}$ (principio de discrepancia) y cuantificar cuánto se aleja del mejor parámetro posible (oráculo), con 50 semillas.
 4. Explicar con la SVD por qué la pseudoinversa falla y qué parte del error no puede eliminarse regularizando.
@@ -64,7 +64,11 @@ $$
 \min_{x}\ \lVert Ax-b\rVert^2 .
 $$
 
-Sus ecuaciones normales son $A^TAx=A^Tb$. No las usamos para calcular: para columnas independientes $\kappa_2(A^TA)=\kappa_2(A)^2$. En nuestro problema el $\kappa_2(A)$ calculado es del orden de $2\times10^{16}$, así que $\kappa_2(A^TA)\approx5\times10^{32}$ excede por mucho $1/\varepsilon_{\text{máq}}\approx4.5\times10^{15}$ y formar $A^TA$ destruye la información.
+Sus ecuaciones normales son $A^TAx=A^Tb$. No las usamos para calcular [8]: para columnas independientes $\kappa_2(A^TA)=\kappa_2(A)^2$, porque los valores singulares de $A^TA$ son los $\sigma_i^2$.
+
+¿Es $A$ singular? En aritmética exacta, no: $\tilde A$ es la matriz de un núcleo gaussiano evaluado en puntos distintos, que es simétrica definida positiva, y $A=D^{-1}\tilde A$ con $D=\operatorname{diag}(\sum_\ell\tilde a_{i\ell})$ diagonal positiva; luego $A$ es invertible y $\ker A=\{0\}$. Pero sus $\sigma_i$ verdaderos más pequeños están muy por debajo de $\varepsilon_{\text{máq}}\,\sigma_1\approx2.2\times10^{-16}$, así que en doble precisión $A$ es numéricamente singular. El $\sigma_{\min}$ que devuelve la SVD ($\approx5\times10^{-17}$) es nivel de redondeo, y el $\kappa_2(A)\approx2\times10^{16}$ calculado no es el número de condición verdadero: solo indica que $\kappa_2(A)\gtrsim1/\varepsilon_{\text{máq}}$ (otros algoritmos de SVD dan valores distintos del mismo orden o mayores). Por eso no reportamos $\kappa_2(A)^2$.
+
+Qué se pierde al formar $A^TA$. En doble precisión se pierde todo $\sigma_i^2$ menor que $\varepsilon_{\text{máq}}\,\sigma_1^2$, es decir, todo $\sigma_i\lesssim\sqrt{\varepsilon_{\text{máq}}}\,\sigma_1\approx1.5\times10^{-8}$. En nuestra $A$ solo 67 valores singulares superan ese nivel, y el rango numérico de la $A^TA$ calculada es 63, frente a 89 para $A$ (tabla `07_ecuaciones_normales`). Trabajar con la SVD de $A$ (o con QR) evita esa pérdida. Con regularización la situación mejora: $\kappa_2(A^TA+\lambda I)\approx\sigma_1^2/\lambda\le10^{10}$ en nuestra malla, y las ecuaciones normales regularizadas difieren de la fórmula espectral en $4.5\times10^{-7}$ como máximo. La advertencia vale sobre todo para mínimos cuadrados sin regularizar.
 
 ### 3.1 Solución de mínima norma
 
@@ -88,7 +92,7 @@ $$
 
 Cada sumando se anula con $z_i=u_i^Tb/\sigma_i$; $\lVert b_\perp\rVert^2$ no depende de $x$. Como $x_0$ no cambia el residuo y $\lVert x\rVert^2=\sum z_i^2+\lVert x_0\rVert^2$, la norma mínima se obtiene con $x_0=0$. $\square$
 
-Observación. $x^\dagger$ es una elección entre todos los ajustes óptimos. Si $x_{\mathrm{true}}$ tiene componente en $\ker A$, ningún método basado solo en $b$ puede recuperarla.
+Observación. $x^\dagger$ es una elección entre todos los ajustes óptimos. Si $x_{\mathrm{true}}$ tiene componente en $\ker A$, ningún método basado solo en $b$ puede recuperarla. En nuestro problema $\ker A=\{0\}$ en aritmética exacta; lo que se pierde en la práctica son las componentes $v_i^Tx_{\mathrm{true}}$ cuyo $\sigma_i$ queda por debajo del nivel del ruido o del redondeo.
 
 ## 4. Por qué se amplifica el ruido
 
@@ -97,10 +101,12 @@ Por linealidad, $x^\dagger = A^\dagger Ax_{\mathrm{true}} + A^\dagger e$, y la p
 $$
 A^{\dagger}e=\sum_{i=1}^{r}\frac{u_i^Te}{\sigma_i}\,v_i ,
 \qquad
-\lVert A^\dagger e\rVert=\Big(\sum_i \frac{(u_i^Te)^2}{\sigma_i^2}\Big)^{1/2}\le \frac{\lVert e\rVert}{\sigma_r}.
+\lVert A^\dagger e\rVert=\Big(\sum_{i=1}^{r} \frac{(u_i^Te)^2}{\sigma_i^2}\Big)^{1/2}\le \frac{1}{\sigma_r}\Big(\sum_{i=1}^{r}(u_i^Te)^2\Big)^{1/2}\le \frac{\lVert e\rVert}{\sigma_r},
 $$
 
-El coeficiente de $v_i$ es el coeficiente del ruido en la dirección $u_i$ multiplicado por $1/\sigma_i$. Como $U$ es ortogonal y $e$ es gaussiano isotrópico, los $u_i^Te$ tienen todos aproximadamente el mismo tamaño, $\lVert e\rVert/\sqrt n$. En cambio, para datos limpios $u_i^T(Ax_{\mathrm{true}})=\sigma_i\,v_i^Tx_{\mathrm{true}}$ decae con $\sigma_i$. Hay entonces un índice a partir del cual los coeficientes de $b$ son solo ruido y dividirlos entre $\sigma_i$ produce oscilaciones enormes. Esto es lo que muestra el gráfico de Picard (`resultados/figuras/03_espectro_picard.png`).
+donde la última desigualdad es la de Bessel ($\{u_i\}_{i\le r}$ es ortonormal).
+
+El coeficiente de $v_i$ es el coeficiente del ruido en la dirección $u_i$ multiplicado por $1/\sigma_i$. Nuestro ruido $e=\eta\lVert Ax_{\mathrm{true}}\rVert z/\lVert z\rVert$ tiene norma fija y dirección uniforme en la esfera (es isotrópico, aunque no exactamente gaussiano). Si completamos $\{u_i\}$ a una base ortonormal de $\mathbb R^m$, $\sum_{i=1}^{m}(u_i^Te)^2=\lVert e\rVert^2$ y, por simetría, $\mathbb E[(u_i^Te)^2]=\lVert e\rVert^2/m$: los $u_i^Te$ tienen todos el mismo tamaño típico $\lVert e\rVert/\sqrt m$ (cada uno fluctúa alrededor de ese valor; aquí $m=n=128$). En cambio, para datos limpios $u_i^T(Ax_{\mathrm{true}})=\sigma_i\,v_i^Tx_{\mathrm{true}}$ decae al menos tan rápido como $\sigma_i$ (condición discreta de Picard [3]). Hay entonces un índice a partir del cual los coeficientes de $b$ están dominados por el ruido y dividirlos entre $\sigma_i$ produce oscilaciones enormes. Esto es lo que muestra el gráfico de Picard (`resultados/figuras/03_espectro_picard.png`).
 
 ### 4.1 Ejemplo diagonal (cálculo a mano)
 
@@ -130,13 +136,15 @@ $$
 \lVert Ax_k-b\rVert^2=\sum_{i=k+1}^{r}(u_i^Tb)^2+\lVert b_\perp\rVert^2 ,
 $$
 
-que no crece al aumentar $k$ (lo comprueba `test_residuo_tsvd_no_crece_con_k`).
+que no crece al aumentar $k$ en aritmética exacta (lo comprueba `test_residuo_tsvd_no_crece_con_k` en una matriz bien escalada). En el cálculo con nuestra $A$, el residuo calculado deja de ser monótono desde $k=94$, cuando entran direcciones con $\sigma_i$ al nivel del redondeo (tabla `07_diagnosticos`).
 
 ### 5.1 Pseudoinversa numérica ≠ inversa sin regularizar
 
-`scipy.linalg.pinv` descarta los $\sigma_i<\texttt{rtol}\cdot\sigma_1$ con $\texttt{rtol}=\max(m,n)\,\varepsilon$ por defecto [5]. En nuestro problema ese umbral es $\approx2.84\times10^{-14}$ y conserva 89 de 128 valores singulares. Es decir, la "pseudoinversa numérica" ya es una SVD truncada con $k=89$; lo informamos explícitamente. Para comparar, también calculamos la suma sobre los 128 $\sigma_i$ positivos ("pseudoinversa completa"). Los $\sigma_i$ con $i\gtrsim95$ forman una meseta cerca de $10^{-16}$: son errores de redondeo de la SVD, no información del operador.
+`scipy.linalg.pinv` descarta los $\sigma_i<\texttt{rtol}\cdot\sigma_1$ con $\texttt{rtol}=\max(m,n)\,\varepsilon$ por defecto [5]. En nuestro problema ese umbral es $\approx2.84\times10^{-14}$ y conserva 89 de 128 valores singulares. Es decir, la "pseudoinversa numérica" ya es una SVD truncada con $k=89$; lo informamos explícitamente. Para comparar, también calculamos la suma sobre los 128 $\sigma_i$ positivos ("pseudoinversa completa"). Desde $i=98$ los $\sigma_i$ calculados forman una meseta en $\approx7\times10^{-17}$ ($\approx0.3\,\varepsilon_{\text{máq}}\sigma_1$): los verdaderos son todavía menores y lo calculado refleja solo el redondeo, no información del operador.
 
 ## 6. Regularización de Tikhonov
+
+La idea, debida a Tikhonov [6] y estudiada para problemas discretos en [2], [3], es penalizar la norma de la solución:
 
 $$
 x_\lambda=\arg\min_x\{\lVert Ax-b\rVert^2+\lambda\lVert x\rVert^2\},\qquad \lambda>0 .
@@ -173,7 +181,7 @@ $$
 - Si $\sigma_i^2\gg\lambda$, $f_i\approx1$: la dirección se conserva.
 - Si $\sigma_i^2\ll\lambda$, $f_i\approx\sigma_i^2/\lambda$: la dirección se atenúa y el término queda $\approx\sigma_i(u_i^Tb)/\lambda$, que no explota.
 
-La SVD truncada corresponde a $f_i\in\{0,1\}$ (corte abrupto); Tikhonov es un filtro suave (`resultados/figuras/08_factores_filtro.png`).
+La SVD truncada corresponde a $f_i\in\{0,1\}$ (corte abrupto); Tikhonov es un filtro suave [2] (`resultados/figuras/08_factores_filtro.png`).
 
 Calculamos $\sigma_i/(\sigma_i^2+\lambda)\cdot(u_i^Tb)$ en lugar de $f_i\cdot(u_i^Tb)/\sigma_i$ para no dividir entre $\sigma_i\approx10^{-17}$. Contrastamos con el sistema aumentado
 
@@ -181,7 +189,7 @@ $$
 \min_x\left\lVert\begin{pmatrix}A\\ \sqrt\lambda\,I\end{pmatrix}x-\begin{pmatrix}b\\0\end{pmatrix}\right\rVert^2,
 $$
 
-cuyas ecuaciones normales son exactamente $(A^TA+\lambda I)x=A^Tb$, resuelto con QR sin formar $A^TA$. La diferencia relativa máxima en la malla es $\approx3\times10^{-10}$.
+cuyas ecuaciones normales son exactamente $(A^TA+\lambda I)x=A^Tb$, resuelto con QR sin formar $A^TA$. En 13 valores de la malla (uno de cada cinco, con $\eta=10^{-3}$) la diferencia relativa máxima es $\approx3\times10^{-10}$.
 
 ### 6.2 Residuo como función de $\lambda$
 
@@ -189,7 +197,7 @@ $$
 \lVert Ax_\lambda-b\rVert^2=\sum_{i=1}^{r}\left(\frac{\lambda}{\sigma_i^2+\lambda}\right)^2(u_i^Tb)^2+\lVert b_\perp\rVert^2 .
 $$
 
-Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que el residuo crece con $\lambda$. Esto hace que la regla de discrepancia de la sección 8 esté bien definida.
+Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que el residuo es no decreciente en $\lambda$ (estrictamente creciente si algún $u_i^Tb\neq0$ con $i\le r$). Esto hace que la regla de discrepancia de la sección 8 esté bien definida.
 
 ## 7. Estabilidad, sesgo y descomposición del error
 
@@ -198,8 +206,10 @@ Cada factor $\lambda/(\sigma_i^2+\lambda)$ es creciente en $\lambda$, así que e
 Si los datos cambian de $b$ a $b+e$, por linealidad
 
 $$
-\lVert x_\lambda(b+e)-x_\lambda(b)\rVert=\Big\lVert\sum_i\frac{\sigma_i}{\sigma_i^2+\lambda}(u_i^Te)v_i\Big\rVert\le\max_{s\ge0}\frac{s}{s^2+\lambda}\,\lVert e\rVert=\frac{\lVert e\rVert}{2\sqrt\lambda}.
+\lVert x_\lambda(b+e)-x_\lambda(b)\rVert=\Big\lVert\sum_i\frac{\sigma_i}{\sigma_i^2+\lambda}(u_i^Te)v_i\Big\rVert\le\max_{s\ge0}\frac{s}{s^2+\lambda}\,\lVert e\rVert=\frac{\lVert e\rVert}{2\sqrt\lambda},
 $$
+
+usando la ortonormalidad de los $v_i$ y otra vez la desigualdad de Bessel.
 
 El máximo se obtiene de $(s-\sqrt\lambda)^2\ge0\iff s^2+\lambda\ge2s\sqrt\lambda\iff \dfrac{s}{s^2+\lambda}\le\dfrac{1}{2\sqrt\lambda}$, con igualdad en $s=\sqrt\lambda$. Comparado con la pseudoinversa (amplificación $1/\sigma_r$), Tikhonov amplifica a lo sumo $1/(2\sqrt\lambda)$, independiente de cuán pequeño sea $\sigma_r$.
 
@@ -211,9 +221,9 @@ $$
 x_\lambda-x_{\mathrm{true}}=\underbrace{\sum_{i=1}^{r}\big(f_i(\lambda)-1\big)(v_i^Tx_{\mathrm{true}})\,v_i\;-\;P_{\ker A}\,x_{\mathrm{true}}}_{\text{sesgo (no depende del ruido)}}\;+\;\underbrace{\sum_{i=1}^{r}f_i(\lambda)\frac{u_i^Te}{\sigma_i}\,v_i}_{\text{ruido propagado}} .
 $$
 
-- Al aumentar $\lambda$: los $f_i$ bajan, el término de ruido baja (cota $\lVert e\rVert/(2\sqrt\lambda)$) y el sesgo sube.
+- Al aumentar $\lambda$: cada $f_i$ baja, así que la norma del término de ruido, $\big(\sum_i f_i^2(u_i^Te)^2/\sigma_i^2\big)^{1/2}$, baja (y también su cota $\lVert e\rVert/(2\sqrt\lambda)$), mientras que la del sesgo, $\big(\sum_i(1-f_i)^2(v_i^Tx_{\mathrm{true}})^2+\lVert P_{\ker A}x_{\mathrm{true}}\rVert^2\big)^{1/2}$, sube.
 - Al disminuir $\lambda$: lo contrario.
-- $P_{\ker A}x_{\mathrm{true}}$ no depende de $\lambda$: es información perdida.
+- $P_{\ker A}x_{\mathrm{true}}$ no depende de $\lambda$: es información perdida. En nuestro problema es cero ($A$ es invertible), pero el mismo papel lo cumplen en la práctica las direcciones con $\sigma_i$ diminuto, cuyo $f_i\approx0$ para cualquier $\lambda$ razonable.
 
 Límites: $\lambda\to0^+$ da $x_\lambda\to A^\dagger b$; $\lambda\to\infty$ da $x_\lambda\to0$ (`test_limites_de_lambda`). El mejor $\lambda$ depende de la escala de $A$, del ruido y de la señal; por eso la malla se expresa como $\lambda/\sigma_1^2\in[10^{-10},1]$.
 
@@ -225,12 +235,12 @@ En un experimento sintético podemos calcular el error para cada $\lambda$ de la
 
 ### 8.2 Principio de discrepancia (Morozov [7])
 
-Si se conoce una cota $\delta\approx\lVert e\rVert$, no tiene sentido ajustar los datos mejor que el nivel del ruido: un residuo menor que $\lVert e\rVert$ significa que la solución está reproduciendo ruido. La regla es:
+Si se conoce una cota $\delta\approx\lVert e\rVert$, no tiene sentido ajustar los datos mejor que el nivel del ruido: la propia señal verdadera tiene residuo $\lVert Ax_{\mathrm{true}}-b\rVert=\lVert e\rVert$, así que un residuo claramente menor que $\lVert e\rVert$ indica que la solución está reproduciendo parte del ruido. La regla es:
 
 > Elegir el mayor $\lambda$ de la malla tal que $\lVert Ax_\lambda-b\rVert\le\tau\delta$, con $\tau=1.1$.
 > Para la SVD truncada: el menor $k$ tal que $\lVert Ax_k-b\rVert\le\tau\delta$.
 
-Por la monotonía de la sección 6.2 (y 5), el conjunto de $\lambda$ viables es un intervalo inicial de la malla y la regla elige su extremo derecho. Supuestos: (i) $\delta$ es una buena estimación del ruido; (ii) los errores de modelo son menores que el ruido; (iii) el umbral es alcanzable en la malla, lo que exige $\min_\lambda\lVert Ax_\lambda-b\rVert\le\tau\delta$. Si no se cumple (iii), la función devuelve "no viable" en lugar de inventar un valor. En el código, las funciones de discrepancia no reciben $x_{\mathrm{true}}$ (lo comprueba `test_discrepancia_no_recibe_la_verdad`).
+Por la monotonía de la sección 6.2, el conjunto de $\lambda$ viables es un intervalo inicial de la malla y la regla elige su extremo derecho. Para la TSVD, en aritmética exacta los $k$ viables forman un intervalo final; numéricamente eso puede fallar para $k\ge94$ (sección 5), por lo que el código no supone monotonía: busca el máximo $\lambda$ (o el mínimo $k$) entre todos los valores viables. Supuestos: (i) $\delta$ es una buena estimación del ruido; (ii) los errores de modelo son menores que el ruido; (iii) el umbral es alcanzable en la malla, lo que exige $\min_\lambda\lVert Ax_\lambda-b\rVert\le\tau\delta$. Si no se cumple (iii), la función devuelve "no viable" en lugar de inventar un valor. Ojo: como $A$ es invertible, en aritmética exacta el residuo tiende a $0$ cuando $\lambda\to0^+$; con una malla que bajara más el umbral siempre se alcanzaría, pero con un $\lambda$ diminuto que amplifica el ruido. La "no viabilidad" depende del extremo de la malla y es una señal de alarma útil, no una propiedad del problema. En el código, las funciones de discrepancia no reciben $x_{\mathrm{true}}$ (lo comprueba `test_discrepancia_no_recibe_la_verdad`).
 
 En este experimento tomamos $\delta=\lVert e\rVert$ (conocido porque generamos el ruido) y estudiamos aparte qué ocurre si $\delta$ está mal estimado ($\delta=0.5\lVert e\rVert$ y $2\lVert e\rVert$).
 
