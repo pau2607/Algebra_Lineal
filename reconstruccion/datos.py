@@ -42,6 +42,15 @@ def ruido(b_limpio: np.ndarray, eta: float, z: np.ndarray) -> np.ndarray:
     return eta * np.linalg.norm(b_limpio) * z / np.linalg.norm(z)
 
 
+def senal_suave(t: np.ndarray) -> np.ndarray:
+    """x_j = 0.5 + 0.4 sin(2 pi t_j) + 0.2 t_j.
+
+    Señal sin saltos y distinta de cero en los extremos. Se usa en la ampliación
+    (penalización de diferencias) para contrastar con la señal con pulso.
+    """
+    return 0.5 + 0.4 * np.sin(2.0 * np.pi * t) + 0.2 * t
+
+
 def problema(n: int = 128, s: float = 0.03, eta: float = 1e-3, semilla: int = 2026):
     """Construye (t, A, x_true, b_limpio, e, b) para un nivel de ruido eta."""
     t = malla(n)

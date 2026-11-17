@@ -1,2 +1,2 @@
 
-from . import datos, metodos, seleccion, metricas  
+from . import datos, metodos, seleccion, metricas, general  
