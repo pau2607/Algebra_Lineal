@@ -48,22 +48,5 @@ Cada uno habla alrededor de 3 minutos de contenido técnico. Todos tenemos que p
 | Preguntas de defensa con respuestas | Completo (desarrollo §11) |
 | Curva L | Solo gráfico (no se usa para elegir) |
 | Guion y diapositivas del video | Completo (`docs/guion_video.md`, `docs/diapositivas/`) |
-| Grabación y edición del video | Pendiente del grupo |
+| Grabación y edición del video | Completo |
 
-## 5. Pendientes del grupo antes de entregar
-
-1. Grabar el video siguiendo `docs/guion_video.md` (ensayar con cronómetro; objetivo 9:50) y pegar el enlace en el README.
-2. Completar la tabla de contribuciones de la sección 3 con los commits reales de cada uno.
-3. Cada integrante rehace a mano al menos una demostración nueva (Proposición 5 o Teorema 3) y repasa las 14 preguntas de la sección 11 del desarrollo.
-4. Ejecutar `python scripts/ejecutar_todo.py` y `python -m pytest -q` en el computador de al menos un integrante.
-5. Poner la etiqueta: `git tag entrega-final && git push origin entrega-final`, y entregar el enlace en Blackboard.
-
-## 6. Preparación individual para la ronda de preguntas
-
-Cada uno debe poder, sin mirar apuntes:
-- explicar el ejemplo diagonal con números ($x^\dagger=(1,11)$, residuo 0, error 10);
-- escribir la fórmula espectral de la pseudoinversa, de la TSVD y de Tikhonov, y decir qué filtro aplica cada una;
-- demostrar la unicidad de Tikhonov (y la condición $\ker A\cap\ker L=\{0\}$ de la ampliación);
-- explicar la discrepancia, qué supone y por qué el oráculo no es aplicable;
-- explicar qué cambia en imagen (Kronecker) y audio (Fourier);
-- responder una "variación": qué pasaría si cambia $s$, $\eta$, $\tau$, $\delta$ o $L$.
